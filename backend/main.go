@@ -34,6 +34,11 @@ func main() {
 	roomService := services.NewRoomService(roomRepo)
 	roomHandler := http.NewRoomHandler(roomService)
 
+	// --- Bookings (เพิ่มส่วนนี้) ---
+    bookingRepo := storage.NewBookingRepository(database.DB)
+    bookingService := services.NewBookingService(bookingRepo)
+    bookingHandler := http.NewBookingHandler(bookingService)
+
 	// 4. Setup Fiber App
 	app := fiber.New()
 
@@ -51,6 +56,11 @@ func main() {
 	rooms.Get("/:id", roomHandler.GetRoom)        // ดูห้องรายตัว
 	rooms.Put("/:id", roomHandler.UpdateRoom)     // แก้ไขห้อง
 	rooms.Delete("/:id", roomHandler.DeleteRoom)  // ลบห้อง
+
+	// Booking Routes (เพิ่มส่วนนี้)
+    bookings := api.Group("/bookings")
+    bookings.Get("/", bookingHandler.GetBookings) // รองรับ ?start=...&end=...
+    bookings.Post("/", bookingHandler.CreateBooking)
 
 	// Test Route
 	app.Get("/", func(c *fiber.Ctx) error {
