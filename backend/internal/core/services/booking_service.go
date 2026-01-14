@@ -74,12 +74,16 @@ func (s *bookingService) GetBookingByID(id uint) (*domain.Booking, error) {
 }
 
 func (s *bookingService) UpdateBookingStatus(id uint, status string, approverID uint) error {
+	// 1. หา Booking เดิมมาก่อน
 	booking, err := s.repo.GetByID(id)
 	if err != nil {
 		return err
 	}
 
+	// 2. อัปเดตสถานะ
 	booking.Status = status
-	booking.ApproverID = &approverID // บันทึกคนอนุมัติ
+	booking.ApproverID = &approverID // บันทึกว่าใครเป็นคนกดอนุมัติ
+	
+	// 3. บันทึก
 	return s.repo.Update(booking)
 }

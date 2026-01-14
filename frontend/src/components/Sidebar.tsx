@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { CalendarDays, LogIn, UserPlus, LogOut } from 'lucide-react'; // เพิ่ม LogOut icon
-import { usePathname } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore'; // import store
+import Link from "next/link";
+import { CalendarDays, LogIn, UserPlus, LogOut, Settings } from "lucide-react"; // เพิ่ม LogOut icon
+import { usePathname } from "next/navigation";
+import { useAuthStore } from "@/store/authStore"; // import store
 
 interface SidebarProps {
   isMobile?: boolean;
@@ -15,33 +15,45 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
   // ดึง state จาก store
   const { isAuthenticated, logout, user } = useAuthStore();
 
-  const menuItems = [
-    { name: 'ปฏิทิน', href: '/', icon: CalendarDays },
-  ];
+  const menuItems = [{ name: "ปฏิทิน", href: "/", icon: CalendarDays }];
 
   // ถ้ายังไม่ login ให้โชว์เมนูเดิม
   if (!isAuthenticated) {
     menuItems.push(
-      { name: 'เข้าสู่ระบบ', href: '/login', icon: LogIn },
-      { name: 'สมัครสมาชิก', href: '/register', icon: UserPlus }
+      { name: "เข้าสู่ระบบ", href: "/login", icon: LogIn },
+      { name: "สมัครสมาชิก", href: "/register", icon: UserPlus }
     );
+  } else {
+    // ถ้า Login แล้ว
+    // เพิ่มเมนูสำหรับ Admin (ในที่นี้เช็ค role ง่ายๆ หรือจะให้เห็นทุกคนไปก่อนก็ได้เพื่อ test)
+    if (user?.role === "admin") {
+      menuItems.push({
+        name: "ผู้ดูแลระบบ",
+        href: "/admin/dashboard",
+        icon: Settings,
+      });
+    }
   }
   // (ถ้า login แล้ว เมนู Login/Register จะหายไป เหลือแต่ปฏิทิน และเดี๋ยวเราเพิ่มปุ่ม Logout ด้านล่าง)
 
-  const displayClass = isMobile ? 'flex w-full h-full' : 'hidden md:flex w-64 h-screen';
+  const displayClass = isMobile
+    ? "flex w-full h-full"
+    : "hidden md:flex w-64 h-screen";
 
   return (
-    <aside className={`${displayClass} bg-tu-pink text-white flex-col shrink-0 shadow-xl transition-all`}>
+    <aside
+      className={`${displayClass} bg-tu-pink text-white flex-col shrink-0 shadow-xl transition-all`}
+    >
       <div className="p-6 text-center border-b border-tu-pink-hover">
         <h1 className="text-2xl font-bold tracking-wider">BRMS</h1>
         <p className="text-sm text-pink-100 opacity-80">Triam Udom Suksa</p>
-        
+
         {/* แสดงชื่อ User ถ้า Login แล้ว */}
         {isAuthenticated && user && (
-            <div className="mt-4 bg-white/10 rounded-lg p-2 text-sm">
-                👋 สวัสดี, {user.username}
-                <div className="text-xs opacity-75 capitalize">({user.role})</div>
-            </div>
+          <div className="mt-4 bg-white/10 rounded-lg p-2 text-sm">
+            👋 สวัสดี, {user.username}
+            <div className="text-xs opacity-75 capitalize">({user.role})</div>
+          </div>
         )}
       </div>
 
@@ -54,9 +66,10 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
               href={item.href}
               onClick={onClose}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200
-                ${isActive 
-                  ? 'bg-white text-tu-pink font-semibold shadow-md' 
-                  : 'text-white hover:bg-tu-pink-hover'
+                ${
+                  isActive
+                    ? "bg-white text-tu-pink font-semibold shadow-md"
+                    : "text-white hover:bg-tu-pink-hover"
                 }`}
             >
               <item.icon size={20} />
@@ -67,16 +80,16 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
 
         {/* ปุ่ม Logout (แสดงเฉพาะตอน Login แล้ว) */}
         {isAuthenticated && (
-            <button
-                onClick={() => {
-                    logout();
-                    if(onClose) onClose();
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200 text-white hover:bg-tu-pink-hover text-left"
-            >
-                <LogOut size={20} />
-                <span>ออกจากระบบ</span>
-            </button>
+          <button
+            onClick={() => {
+              logout();
+              if (onClose) onClose();
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200 text-white hover:bg-tu-pink-hover text-left"
+          >
+            <LogOut size={20} />
+            <span>ออกจากระบบ</span>
+          </button>
         )}
       </nav>
 

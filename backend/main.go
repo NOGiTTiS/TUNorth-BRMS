@@ -66,6 +66,7 @@ func main() {
     bookings := api.Group("/bookings")
     bookings.Get("/", bookingHandler.GetBookings) // รองรับ ?start=...&end=...
     bookings.Post("/", bookingHandler.CreateBooking)
+	bookings.Patch("/:id/status", bookingHandler.UpdateStatus)
 	
 	// Auth Routes (เพิ่มใหม่)
     api.Post("/register", authHandler.Register)
