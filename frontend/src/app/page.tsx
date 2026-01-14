@@ -227,7 +227,7 @@ export default function Home() {
             {rooms.map((room) => (
               <div key={room.id} className="flex items-center gap-2">
                 <span
-                  className="w-4 h-4 rounded-full shadow-sm flex-shrink-0"
+                  className="w-4 h-4 rounded-full shadow-sm shrink-0"
                   style={{ backgroundColor: room.color || "#ccc" }}
                 ></span>
                 <span className="text-sm text-slate-600">{room.room_name}</span>
