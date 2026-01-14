@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Booking } from "@/types/booking";
-import { MapPin, Phone, Users, Clock, User } from "lucide-react";
+import { MapPin, Phone, Users, Clock, User, Image as ImageIcon } from "lucide-react";
 
 interface BookingDetailModalProps {
   booking: Booking | null;
@@ -146,6 +146,33 @@ export default function BookingDetailModal({
               {booking.note || "-"}
             </div>
           </div>
+
+          {/* เพิ่มส่วนแสดงรูปภาพ */}
+          {booking.layout_image && (
+            <div className="grid grid-cols-3 gap-2 text-sm mt-2">
+              <div className="font-bold text-slate-700 flex items-start gap-1">
+                รูปแบบห้อง:
+              </div>
+              <div className="col-span-2">
+                <a
+                  href={`http://localhost:8080${booking.layout_image}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block"
+                >
+                  <img
+                    src={`http://localhost:8080${booking.layout_image}`}
+                    alt="Layout"
+                    className="w-full h-auto rounded-md border hover:opacity-90 transition-opacity"
+                    style={{ maxHeight: "150px", objectFit: "cover" }}
+                  />
+                  <span className="text-xs text-tu-pink mt-1 inline-flex items-center gap-1">
+                    <ImageIcon size={12} /> คลิกเพื่อดูรูปใหญ่
+                  </span>
+                </a>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-3 gap-2 text-sm items-center">
             <div className="font-bold text-slate-700">สถานะ:</div>

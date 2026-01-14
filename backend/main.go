@@ -35,42 +35,48 @@ func main() {
 	roomHandler := http.NewRoomHandler(roomService)
 
 	// --- Bookings (เพิ่มส่วนนี้) ---
-    bookingRepo := storage.NewBookingRepository(database.DB)
-    bookingService := services.NewBookingService(bookingRepo)
-    bookingHandler := http.NewBookingHandler(bookingService)
+	bookingRepo := storage.NewBookingRepository(database.DB)
+	bookingService := services.NewBookingService(bookingRepo)
+	bookingHandler := http.NewBookingHandler(bookingService)
 
 	// Auth (เพิ่มใหม่)
-    userRepo := storage.NewUserRepository(database.DB)
-    authService := services.NewAuthService(userRepo)
-    authHandler := http.NewAuthHandler(authService)
+	userRepo := storage.NewUserRepository(database.DB)
+	authService := services.NewAuthService(userRepo)
+	authHandler := http.NewAuthHandler(authService)
 
 	// 4. Setup Fiber App
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		// เพิ่มขีดจำกัดขนาดไฟล์เป็น 20 MB (หรือตามต้องการ)
+		BodyLimit: 20 * 1024 * 1024,
+	})
 
 	// Middleware: Logger (ดู log การยิง api) & CORS (ให้ frontend เรียกได้)
 	app.Use(logger.New())
 	app.Use(cors.New())
+
+	// เปิดให้เข้าถึงไฟล์ในโฟลเดอร์ uploads ผ่าน URL /uploads
+	app.Static("/uploads", "./uploads")
 
 	// 5. Routes Definition
 	api := app.Group("/api") // จัดกลุ่ม path ขึ้นต้นด้วย /api
 
 	// Room Routes
 	rooms := api.Group("/rooms")
-	rooms.Post("/", roomHandler.CreateRoom)       // สร้างห้อง
-	rooms.Get("/", roomHandler.GetAllRooms)       // ดูห้องทั้งหมด
-	rooms.Get("/:id", roomHandler.GetRoom)        // ดูห้องรายตัว
-	rooms.Put("/:id", roomHandler.UpdateRoom)     // แก้ไขห้อง
-	rooms.Delete("/:id", roomHandler.DeleteRoom)  // ลบห้อง
+	rooms.Post("/", roomHandler.CreateRoom)      // สร้างห้อง
+	rooms.Get("/", roomHandler.GetAllRooms)      // ดูห้องทั้งหมด
+	rooms.Get("/:id", roomHandler.GetRoom)       // ดูห้องรายตัว
+	rooms.Put("/:id", roomHandler.UpdateRoom)    // แก้ไขห้อง
+	rooms.Delete("/:id", roomHandler.DeleteRoom) // ลบห้อง
 
 	// Booking Routes (เพิ่มส่วนนี้)
-    bookings := api.Group("/bookings")
-    bookings.Get("/", bookingHandler.GetBookings) // รองรับ ?start=...&end=...
-    bookings.Post("/", bookingHandler.CreateBooking)
+	bookings := api.Group("/bookings")
+	bookings.Get("/", bookingHandler.GetBookings) // รองรับ ?start=...&end=...
+	bookings.Post("/", bookingHandler.CreateBooking)
 	bookings.Patch("/:id/status", bookingHandler.UpdateStatus)
-	
+
 	// Auth Routes (เพิ่มใหม่)
-    api.Post("/register", authHandler.Register)
-    api.Post("/login", authHandler.Login)
+	api.Post("/register", authHandler.Register)
+	api.Post("/login", authHandler.Login)
 
 	// Test Route
 	app.Get("/", func(c *fiber.Ctx) error {

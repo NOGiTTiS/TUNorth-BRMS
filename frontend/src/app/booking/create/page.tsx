@@ -4,7 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { Room } from "@/types/room";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -16,8 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox"; // เพิ่ม Checkbox
-import { Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 export default function CreateBookingPage() {
@@ -28,7 +34,7 @@ export default function CreateBookingPage() {
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
 
-  // แยก State วันที่และเวลาเพื่อให้เหมือนในรูป
+  // State สำหรับฟอร์ม
   const [formData, setFormData] = useState({
     subject: "",
     room_id: "",
@@ -44,10 +50,9 @@ export default function CreateBookingPage() {
     attendees: "",
     note: "",
 
-    // Checkbox อุปกรณ์ (เก็บเป็น Array ของ String)
     resources: [] as string[],
 
-    // ไฟล์รูป (ถ้ามี)
+    // เก็บไฟล์รูปภาพ
     layout_image: null as File | null,
   });
 
@@ -94,7 +99,6 @@ export default function CreateBookingPage() {
     setFormData((prev) => ({ ...prev, room_id: value }));
   };
 
-  // จัดการการติ๊ก Checkbox
   const handleResourceChange = (checked: boolean, value: string) => {
     if (checked) {
       setFormData((prev) => ({
@@ -109,7 +113,7 @@ export default function CreateBookingPage() {
     }
   };
 
-  // จัดการไฟล์
+  // จัดการไฟล์เมื่อมีการเลือก
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFormData((prev) => ({ ...prev, layout_image: e.target.files![0] }));
@@ -120,7 +124,7 @@ export default function CreateBookingPage() {
     e.preventDefault();
     setLoading(true);
 
-    // 1. รวมวันที่และเวลาเข้าด้วยกัน (YYYY-MM-DD + T + HH:mm)
+    // 1. รวมวันที่และเวลา
     if (
       !formData.start_date ||
       !formData.start_time ||
@@ -148,44 +152,46 @@ export default function CreateBookingPage() {
     }
 
     try {
-      const payload = {
-        user_id: user?.user_id,
-        room_id: parseInt(formData.room_id),
-        subject: formData.subject,
-        department: formData.department,
-        phone: formData.phone,
-        attendees: parseInt(formData.attendees) || 0,
-        start_time: startDateTime.toISOString(),
-        end_time: endDateTime.toISOString(),
-        note: formData.note,
-        status: "pending",
+      // 2. ใช้ FormData แทน JSON เพื่อรองรับ File Upload
+      const formDataToSend = new FormData();
 
-        // *หมายเหตุ: การส่ง resources และรูปภาพ ต้องปรับ Backend ให้รับด้วย
-        // ตอนนี้เราส่ง Note ไปรวมๆ กันก่อน หรือต้องทำ API Multipart Form Data เพิ่มเติม
-        // ใน MVP นี้ผมจะเอา resources ไปต่อท้าย note เพื่อให้ admin เห็นก่อนครับ
-        //booking_resources: formData.resources,
-      };
+      formDataToSend.append("user_id", user?.user_id.toString() || "");
+      formDataToSend.append("room_id", formData.room_id);
+      formDataToSend.append("subject", formData.subject);
+      formDataToSend.append("department", formData.department);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("attendees", formData.attendees || "0");
+      formDataToSend.append("start_time", startDateTime.toISOString());
+      formDataToSend.append("end_time", endDateTime.toISOString());
+      formDataToSend.append("status", "pending");
 
-      // (Optional) เอา Resource ไปแปะใน Note ชั่วคราวเพื่อให้เห็นข้อมูล
+      // จัดการ Note รวมกับ Resources (ตาม MVP)
+      let finalNote = formData.note;
       if (formData.resources.length > 0) {
-        // แปลง ID เป็นชื่อภาษาไทยก่อนบันทึก
         const selectedResourceLabels = formData.resources
-            .map(r => resourceOptions.find(o => o.id === r)?.label)
-            .filter(Boolean) // กรองค่าที่อาจจะเป็น undefined ทิ้ง
-            .join(', ');
-
+          .map((r) => resourceOptions.find((o) => o.id === r)?.label)
+          .filter(Boolean)
+          .join(", ");
         if (selectedResourceLabels) {
-            payload.note += `\n[อุปกรณ์ที่ขอ: ${selectedResourceLabels}]`;
+          finalNote += `\n[อุปกรณ์ที่ขอ: ${selectedResourceLabels}]`;
         }
       }
+      formDataToSend.append("note", finalNote);
 
+      // แนบไฟล์รูปภาพ (ถ้ามี)
+      if (formData.layout_image) {
+        formDataToSend.append("layout_image", formData.layout_image);
+      }
+
+      // 3. ส่งไปยัง Backend
       const res = await fetch("http://localhost:8080/api/bookings", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          // สำคัญ: ห้ามใส่ 'Content-Type': 'application/json' เด็ดขาด!
+          // Browser จะจัดการ Boundary ของ Multipart ให้เอง
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: formDataToSend,
       });
 
       const data = await res.json();
@@ -212,11 +218,22 @@ export default function CreateBookingPage() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-5xl font-sans">
+      <Button
+        variant="ghost"
+        onClick={() => router.back()}
+        className="mb-4 text-slate-500 hover:text-tu-pink pl-0"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" /> กลับหน้าปฏิทิน
+      </Button>
+
       <Card className="shadow-sm border border-gray-200">
         <CardHeader className="pb-4 border-b">
           <CardTitle className="text-2xl font-bold text-black">
             จองห้องประชุม
           </CardTitle>
+          <CardDescription>
+            กรอกข้อมูลและอัปโหลดผังการจัดห้อง (ถ้ามี)
+          </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -224,19 +241,16 @@ export default function CreateBookingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="room" className="font-bold">
-                  เลือกห้องประชุม <span className="text-red-500">*</span>
+                  ห้องประชุม <span className="text-red-500">*</span>
                 </Label>
                 <Select onValueChange={handleRoomChange} required>
-                  {/* เพิ่ม className เพื่อจัดขนาดและสีพื้นหลังให้ชัดเจน */}
                   <SelectTrigger
                     id="room"
                     className="w-full h-11 bg-white border-slate-300 focus:ring-tu-pink"
                   >
                     <SelectValue placeholder="-- กรุณาเลือกห้อง --" />
                   </SelectTrigger>
-
-                  {/* เพิ่ม bg-white ให้ตัวเลือกรายการ */}
-                  <SelectContent className="bg-white z-9999">
+                  <SelectContent className="bg-white z-[9999]">
                     {rooms.map((room) => (
                       <SelectItem
                         key={room.id}
@@ -351,7 +365,7 @@ export default function CreateBookingPage() {
               </div>
             </div>
 
-            {/* แถว 4: อุปกรณ์ที่ต้องการ (Checkbox) */}
+            {/* แถว 4: อุปกรณ์ที่ต้องการ */}
             <div className="space-y-3">
               <Label className="font-bold">อุปกรณ์ที่ต้องการ</Label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -374,11 +388,10 @@ export default function CreateBookingPage() {
               </div>
             </div>
 
-            {/* แถว 5: รูปแบบการจัดห้อง (Custom Style) */}
+            {/* แถว 5: รูปแบบการจัดห้อง (Custom File Input) */}
             <div className="space-y-2">
               <Label className="font-bold">รูปแบบการจัดห้อง (ถ้ามี)</Label>
               <div className="flex items-center gap-3">
-                {/* 1. ซ่อน Input ตัวจริงไว้ */}
                 <Input
                   id="layout_image"
                   type="file"
@@ -386,23 +399,18 @@ export default function CreateBookingPage() {
                   className="hidden"
                   onChange={(e) => {
                     handleFileChange(e);
-                    // อัปเดตชื่อไฟล์เพื่อแสดงผล
                     const file = e.target.files?.[0];
                     const span = document.getElementById("file-name-display");
                     if (span)
                       span.innerText = file ? file.name : "ไม่ได้เลือกไฟล์ใด";
                   }}
                 />
-
-                {/* 2. สร้างปุ่มหลอกๆ (Label) ที่ไปกด Input ตัวจริง */}
                 <Label
                   htmlFor="layout_image"
                   className="bg-tu-pink/10 text-tu-pink hover:bg-tu-pink hover:text-white border border-tu-pink transition-colors px-4 py-2 rounded-md cursor-pointer text-sm font-medium"
                 >
                   เลือกไฟล์
                 </Label>
-
-                {/* 3. ส่วนแสดงชื่อไฟล์ */}
                 <span id="file-name-display" className="text-sm text-slate-500">
                   ไม่ได้เลือกไฟล์ใด
                 </span>
@@ -423,7 +431,7 @@ export default function CreateBookingPage() {
               />
             </div>
 
-            {/* คำเตือน + ปุ่ม */}
+            {/* ปุ่ม */}
             <div className="pt-4 space-y-4">
               <p className="text-red-600 font-bold text-sm text-center md:text-left">
                 ** หากเป็นการจองในช่วงวันหยุด กรุณาประสานเจ้าหน้าที่
