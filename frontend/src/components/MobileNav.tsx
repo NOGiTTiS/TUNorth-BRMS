@@ -1,22 +1,20 @@
 'use client';
 
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+// 1. เพิ่ม SheetDescription ที่ import
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
-import { useState, useEffect } from 'react'; // 1. import useEffect
+import { useState, useEffect } from 'react';
 
 export default function MobileNav() {
   const [open, setOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false); // 2. สร้าง state เช็คการโหลด
+  const [isMounted, setIsMounted] = useState(false);
 
-  // 3. ใช้ useEffect เพื่อระบุว่า Client โหลดเสร็จแล้ว
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // 4. ถ้ายังโหลดไม่เสร็จ (เป็นฝั่ง Server) ให้แสดงโครงสร้างนิ่งๆ 
-  // โดยไม่มี SheetTrigger เพื่อเลี่ยงปัญหา ID ไม่ตรงกัน
   if (!isMounted) {
     return (
       <div className="md:hidden flex items-center justify-between p-4 bg-tu-pink text-white shadow-md">
@@ -30,15 +28,12 @@ export default function MobileNav() {
     );
   }
 
-  // 5. ถ้าโหลดเสร็จแล้ว ให้แสดงของจริงที่มี Sheet
   return (
     <div className="md:hidden flex items-center justify-between p-4 bg-tu-pink text-white shadow-md">
-      {/* โลโก้ซ้ายมือ */}
       <div className="font-bold text-lg tracking-wider">
         TUNorth BRMS
       </div>
 
-      {/* ปุ่มเมนูขวามือ */}
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="text-white hover:bg-tu-pink-hover hover:text-white">
@@ -46,9 +41,14 @@ export default function MobileNav() {
           </Button>
         </SheetTrigger>
         
-        {/* เนื้อหาที่จะเลื่อนออกมา */}
         <SheetContent side="left" className="p-0 border-r-0 w-64 bg-tu-pink text-white border-none">
           <SheetTitle className="sr-only">Menu</SheetTitle>
+
+          {/* 2. เพิ่มส่วนนี้เข้าไปครับ (ซ่อนไว้ด้วย sr-only) */}
+          <SheetDescription className="sr-only">
+            เมนูหลักสำหรับนำทางในระบบจองห้องประชุม
+          </SheetDescription>
+          
           <div className="h-full">
              <Sidebar isMobile={true} onClose={() => setOpen(false)} />
           </div>

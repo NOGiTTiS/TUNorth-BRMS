@@ -1,6 +1,7 @@
 package http
 
 import (
+	"strconv"
 	"tunorth-brms-backend/internal/core/domain"
 	"tunorth-brms-backend/internal/core/ports"
 
@@ -16,12 +17,14 @@ func NewBookingHandler(service ports.BookingService) *BookingHandler {
 }
 
 // [GET] /api/bookings?start=...&end=...
+// ในฟังก์ชัน GetBookings
 func (h *BookingHandler) GetBookings(c *fiber.Ctx) error {
 	start := c.Query("start")
 	end := c.Query("end")
+	userIdStr := c.Query("user_id") // รับค่ามาเป็น string ก่อน
 
+	// 1. กรณีดึงข้อมูลปฏิทิน (กรองตามวันที่ start/end)
 	if start != "" && end != "" {
-		// กรณีปฏิทินดึงข้อมูล
 		bookings, err := h.service.GetBookingsByRange(start, end)
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
@@ -29,11 +32,32 @@ func (h *BookingHandler) GetBookings(c *fiber.Ctx) error {
 		return c.JSON(bookings)
 	}
 
-	// กรณีดึงทั้งหมด (Admin List)
+	// 2. ดึงข้อมูลทั้งหมดมาก่อน (เพื่อเตรียมกรอง)
 	bookings, err := h.service.GetAllBookings()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
+
+	// 3. กรณีดูประวัติส่วนตัว (กรองตาม User ID)
+	if userIdStr != "" {
+		// แปลง user_id จาก string เป็น int
+		targetID, err := strconv.Atoi(userIdStr)
+		if err != nil {
+			// ถ้าส่งมาไม่ใช่ตัวเลข ให้แจ้ง error กลับไป
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid user_id format"})
+		}
+
+		// สร้าง slice ใหม่เพื่อเก็บเฉพาะของ User คนนั้น
+		var myBookings []domain.Booking
+		for _, b := range bookings {
+			if int(b.UserID) == targetID {
+				myBookings = append(myBookings, b)
+			}
+		}
+		return c.JSON(myBookings)
+	}
+
+	// 4. กรณี Admin หรือไม่ส่งอะไรมาเลย -> คืนค่าทั้งหมด
 	return c.JSON(bookings)
 }
 

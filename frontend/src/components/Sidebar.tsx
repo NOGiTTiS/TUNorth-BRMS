@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarDays, LogIn, UserPlus, LogOut, Settings } from "lucide-react"; // เพิ่ม LogOut icon
+import {
+  CalendarDays,
+  LogIn,
+  UserPlus,
+  LogOut,
+  Settings,
+  ListTodo,
+} from "lucide-react"; // เพิ่ม LogOut icon
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore"; // import store
 
@@ -24,8 +31,14 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
       { name: "สมัครสมาชิก", href: "/register", icon: UserPlus }
     );
   } else {
-    // ถ้า Login แล้ว
-    // เพิ่มเมนูสำหรับ Admin (ในที่นี้เช็ค role ง่ายๆ หรือจะให้เห็นทุกคนไปก่อนก็ได้เพื่อ test)
+    // เพิ่มเมนูนี้สำหรับทุกคนที่ Login
+    menuItems.push({
+      name: "การจองของฉัน",
+      href: "/my-bookings",
+      icon: ListTodo,
+    });
+
+    // Admin Menu
     if (user?.role === "admin") {
       menuItems.push({
         name: "ผู้ดูแลระบบ",
