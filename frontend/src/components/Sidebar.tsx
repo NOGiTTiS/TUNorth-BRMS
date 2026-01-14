@@ -8,6 +8,7 @@ import {
   LogOut,
   Settings,
   ListTodo,
+  DoorOpen,
 } from "lucide-react"; // เพิ่ม LogOut icon
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore"; // import store
@@ -40,11 +41,10 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
 
     // Admin Menu
     if (user?.role === "admin") {
-      menuItems.push({
-        name: "ผู้ดูแลระบบ",
-        href: "/admin/dashboard",
-        icon: Settings,
-      });
+      menuItems.push(
+        { name: "ผู้ดูแลระบบ", href: "/admin/dashboard", icon: Settings },
+        { name: "จัดการห้องประชุม", href: "/admin/rooms", icon: DoorOpen } // เพิ่มบรรทัดนี้
+      );
     }
   }
   // (ถ้า login แล้ว เมนู Login/Register จะหายไป เหลือแต่ปฏิทิน และเดี๋ยวเราเพิ่มปุ่ม Logout ด้านล่าง)
