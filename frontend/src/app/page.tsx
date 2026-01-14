@@ -139,7 +139,7 @@ export default function Home() {
 
             <Button
               onClick={() => router.push("/booking/create")}
-              className="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white"
+              className="w-full md:w-auto sm:w-auto bg-green-600 hover:bg-green-700 text-white"
             >
               + จองห้องประชุม
             </Button>
@@ -147,7 +147,7 @@ export default function Home() {
         ) : (
           <Button
             onClick={() => router.push("/login")}
-            className="w-full md:w-auto bg-tu-pink hover:bg-tu-pink-hover text-white"
+            className="w-full md:w-auto sm:w-auto bg-tu-pink hover:bg-tu-pink-hover text-white"
           >
             เข้าสู่ระบบ
           </Button>

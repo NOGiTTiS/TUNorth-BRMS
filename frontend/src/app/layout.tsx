@@ -6,6 +6,7 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
 import { useAuthStore } from "@/store/authStore"; // import store
+import { Toaster } from "@/components/ui/sonner";
 
 const prompt = Prompt({
   subsets: ["thai", "latin"],
@@ -27,7 +28,7 @@ export default function RootLayout({
 
   return (
     <html lang="th">
-      <body className={`${prompt.variable} font-sans antialiased bg-gray-50`}>
+      <body className="...">
         <div className="flex flex-col md:flex-row min-h-screen">
           <MobileNav />
           <Sidebar />
@@ -35,6 +36,9 @@ export default function RootLayout({
             {children}
           </main>
         </div>
+
+        {/* เปลี่ยนจาก <Toaster /> ธรรมดา เป็นของ Sonner */}
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );
