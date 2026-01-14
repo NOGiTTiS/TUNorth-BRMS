@@ -1,8 +1,11 @@
-import type { Metadata } from "next";
+"use client"; // เปลี่ยนเป็น Client Component เพื่อใช้ useEffect
+
+import { useEffect } from "react";
 import { Prompt } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
-import MobileNav from "@/components/MobileNav"; // import มาใหม่
+import MobileNav from "@/components/MobileNav";
+import { useAuthStore } from "@/store/authStore"; // import store
 
 const prompt = Prompt({
   subsets: ["thai", "latin"],
@@ -10,30 +13,27 @@ const prompt = Prompt({
   variable: "--font-prompt",
 });
 
-export const metadata: Metadata = {
-  title: "TUNorth-BRMS",
-  description: "ระบบจองห้องประชุม",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // เรียกใช้ Store
+  const initializeAuth = useAuthStore((state) => state.initialize);
+
+  useEffect(() => {
+    initializeAuth(); // ตรวจสอบ Token เมื่อโหลดเว็บครั้งแรก
+  }, [initializeAuth]);
+
   return (
     <html lang="th">
       <body className={`${prompt.variable} font-sans antialiased bg-gray-50`}>
         <div className="flex flex-col md:flex-row min-h-screen">
-            {/* 1. Mobile Navbar (แสดงเฉพาะจอมือถือ) */}
-            <MobileNav />
-
-            {/* 2. Desktop Sidebar (แสดงเฉพาะจอใหญ่ - จัดการในตัว Sidebar เองแล้ว) */}
-            <Sidebar />
-          
-            {/* 3. เนื้อหาหลัก */}
-            <main className="flex-1 p-3 md:p-6 overflow-auto w-full">
-                {children}
-            </main>
+          <MobileNav />
+          <Sidebar />
+          <main className="flex-1 p-3 md:p-6 overflow-auto w-full">
+            {children}
+          </main>
         </div>
       </body>
     </html>

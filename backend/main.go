@@ -39,6 +39,11 @@ func main() {
     bookingService := services.NewBookingService(bookingRepo)
     bookingHandler := http.NewBookingHandler(bookingService)
 
+	// Auth (เพิ่มใหม่)
+    userRepo := storage.NewUserRepository(database.DB)
+    authService := services.NewAuthService(userRepo)
+    authHandler := http.NewAuthHandler(authService)
+
 	// 4. Setup Fiber App
 	app := fiber.New()
 
@@ -61,6 +66,10 @@ func main() {
     bookings := api.Group("/bookings")
     bookings.Get("/", bookingHandler.GetBookings) // รองรับ ?start=...&end=...
     bookings.Post("/", bookingHandler.CreateBooking)
+	
+	// Auth Routes (เพิ่มใหม่)
+    api.Post("/register", authHandler.Register)
+    api.Post("/login", authHandler.Login)
 
 	// Test Route
 	app.Get("/", func(c *fiber.Ctx) error {

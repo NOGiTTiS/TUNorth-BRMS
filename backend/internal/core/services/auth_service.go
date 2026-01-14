@@ -1,0 +1,70 @@
+package services
+
+import (
+	"errors"
+	"os"
+	"time"
+	"tunorth-brms-backend/internal/core/domain"
+	"tunorth-brms-backend/internal/core/ports"
+
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
+)
+
+type authService struct {
+	userRepo ports.UserRepository
+}
+
+func NewAuthService(userRepo ports.UserRepository) ports.AuthService {
+	return &authService{userRepo: userRepo}
+}
+
+// Register: สมัครสมาชิก (Hash Password ก่อนบันทึก)
+func (s *authService) Register(user *domain.User) error {
+	// 1. ตรวจสอบว่ามี username นี้หรือยัง
+	existingUser, _ := s.userRepo.GetByUsername(user.Username)
+	if existingUser != nil && existingUser.ID != 0 {
+		return errors.New("username already exists")
+	}
+
+	// 2. Hash Password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.Password = string(hashedPassword)
+
+	// 3. บันทึก
+	return s.userRepo.Create(user)
+}
+
+// Login: ตรวจสอบรหัสและออก Token
+func (s *authService) Login(username, password string) (string, error) {
+	// 1. หา User
+	user, err := s.userRepo.GetByUsername(username)
+	if err != nil {
+		return "", errors.New("invalid username or password")
+	}
+
+	// 2. ตรวจสอบรหัสผ่าน (Hash vs Plain)
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return "", errors.New("invalid username or password")
+	}
+
+	// 3. สร้าง JWT Token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id":  user.ID,
+		"username": user.Username,
+		"role":     user.Role,
+		"exp":      time.Now().Add(time.Hour * 24).Unix(), // หมดอายุใน 24 ชม.
+	})
+
+	// เซ็นลายเซ็นด้วย Secret Key (จาก .env)
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
