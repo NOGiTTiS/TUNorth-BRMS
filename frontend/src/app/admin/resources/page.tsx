@@ -153,7 +153,7 @@ export default function AdminResourcesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px]">ID</TableHead>
+                <TableHead className="w-12.5">ID</TableHead>
                 <TableHead>ชื่ออุปกรณ์</TableHead>
                 <TableHead>ประเภท</TableHead>
                 <TableHead className="text-right">จัดการ</TableHead>
@@ -200,7 +200,7 @@ export default function AdminResourcesPage() {
 
       {/* Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-white">
+        <DialogContent className="sm:max-w-106.25 bg-white">
           <DialogHeader>
             <DialogTitle>
               {editingResource ? "แก้ไขอุปกรณ์" : "เพิ่มอุปกรณ์ใหม่"}

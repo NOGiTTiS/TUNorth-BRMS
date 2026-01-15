@@ -44,6 +44,10 @@ func main() {
 	authService := services.NewAuthService(userRepo)
 	authHandler := http.NewAuthHandler(authService)
 
+	// User Management
+    userService := services.NewUserService(userRepo)
+    userHandler := http.NewUserHandler(userService)
+
 	// Resource
 	resRepo := storage.NewResourceRepository(database.DB)
     resService := services.NewResourceService(resRepo)
@@ -73,15 +77,22 @@ func main() {
 	rooms.Put("/:id", roomHandler.UpdateRoom)    // แก้ไขห้อง
 	rooms.Delete("/:id", roomHandler.DeleteRoom) // ลบห้อง
 
-	// Booking Routes (เพิ่มส่วนนี้)
+	// Booking Routes 
 	bookings := api.Group("/bookings")
 	bookings.Get("/", bookingHandler.GetBookings) // รองรับ ?start=...&end=...
 	bookings.Post("/", bookingHandler.CreateBooking)
 	bookings.Patch("/:id/status", bookingHandler.UpdateStatus)
 
-	// Auth Routes (เพิ่มใหม่)
+	// Auth Routes 
 	api.Post("/register", authHandler.Register)
 	api.Post("/login", authHandler.Login)
+
+	// User Routes
+    users := api.Group("/users")
+    users.Get("/", userHandler.GetAllUsers)
+    users.Put("/:id", userHandler.UpdateUser)
+    users.Delete("/:id", userHandler.DeleteUser)
+	users.Post("/import", userHandler.ImportUsers)
 
 	// Resource Routes
     resources := api.Group("/resources")

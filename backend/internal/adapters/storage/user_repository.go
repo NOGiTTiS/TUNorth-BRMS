@@ -30,3 +30,18 @@ func (r *userRepository) GetByID(id uint) (*domain.User, error) {
 	err := r.db.First(&user, id).Error
 	return &user, err
 }
+
+func (r *userRepository) GetAll() ([]domain.User, error) {
+	var users []domain.User
+	// ดึงทั้งหมด (ไม่เอา Password มาแสดง)
+	err := r.db.Omit("password").Find(&users).Error
+	return users, err
+}
+
+func (r *userRepository) Update(user *domain.User) error {
+	return r.db.Save(user).Error
+}
+
+func (r *userRepository) Delete(id uint) error {
+	return r.db.Delete(&domain.User{}, id).Error
+}

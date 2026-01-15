@@ -6,9 +6,22 @@ type UserRepository interface {
 	Create(user *domain.User) error
 	GetByUsername(username string) (*domain.User, error)
 	GetByID(id uint) (*domain.User, error)
+	GetAll() ([]domain.User, error)
+	Update(user *domain.User) error
+	Delete(id uint) error
 }
 
 type AuthService interface {
 	Register(user *domain.User) error
-	Login(username, password string) (string, error) // Return JWT Token
+	Login(username, password string) (string, error)
+}
+
+// --- แก้ไขตรงนี้ครับ ---
+type UserService interface {
+	GetAllUsers() ([]domain.User, error)
+	UpdateUser(id uint, user *domain.User) error
+	DeleteUser(id uint) error
+	
+	// ✅ เพิ่มบรรทัดนี้ลงไปครับ
+	CreateUser(user *domain.User) error 
 }
