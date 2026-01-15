@@ -219,7 +219,7 @@ export default function AdminUsersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px]">ID</TableHead>
+                <TableHead className="w-12.5">ID</TableHead>
                 <TableHead>Username</TableHead>
                 <TableHead>ชื่อ-สกุล</TableHead>
                 <TableHead>ฝ่ายงาน</TableHead>
@@ -275,7 +275,7 @@ export default function AdminUsersPage() {
 
       {/* --- Edit Modal --- */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="sm:max-w-[500px] bg-white">
+        <DialogContent className="sm:max-w-125 bg-white">
           <DialogHeader>
             <DialogTitle>
               แก้ไขข้อมูลผู้ใช้งาน: {editingUser?.username}
@@ -368,7 +368,7 @@ export default function AdminUsersPage() {
 
       {/* --- Import CSV Modal --- */}
       <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
-        <DialogContent className="sm:max-w-[450px] bg-white">
+        <DialogContent className="sm:max-w-112.5 bg-white">
           <DialogHeader>
             <DialogTitle>นำเข้าข้อมูลผู้ใช้งาน (CSV)</DialogTitle>
             <DialogDescription>
