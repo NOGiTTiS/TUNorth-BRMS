@@ -136,38 +136,57 @@ export default function AdminResourcesPage() {
   if (loading) return <div className="p-10 text-center">Loading...</div>;
 
   return (
-    <div className="container mx-auto py-10 px-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <Box /> จัดการอุปกรณ์ (Resources)
-          </CardTitle>
-          <Button
-            onClick={openAddModal}
-            className="bg-tu-pink hover:bg-tu-pink-hover text-white"
-          >
-            <Plus className="mr-2 h-4 w-4" /> เพิ่มอุปกรณ์
-          </Button>
-        </CardHeader>
-        <CardContent>
+    <div className="container mx-auto py-10 px-4 space-y-8">
+      {/* 1. Header & Toolbar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800">
+            จัดการอุปกรณ์ (Resources)
+          </h1>
+          <p className="text-slate-500 mt-1">
+            จัดการรายการอุปกรณ์และสิ่งอำนวยความสะดวก
+          </p>
+        </div>
+        <Button
+          onClick={openAddModal}
+          className="bg-tu-pink hover:bg-tu-pink-hover text-white rounded-full shadow-lg shadow-tu-pink/30"
+        >
+          <Plus className="mr-2 h-4 w-4" /> เพิ่มอุปกรณ์
+        </Button>
+      </div>
+
+      {/* 2. Table Section (Card) */}
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="p-6">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="w-12.5">ID</TableHead>
-                <TableHead>ชื่ออุปกรณ์</TableHead>
-                <TableHead>ประเภท</TableHead>
-                <TableHead className="text-right">จัดการ</TableHead>
+              <TableRow className="hover:bg-transparent border-b border-slate-100">
+                <TableHead className="w-12.5 text-slate-500 font-medium">
+                  ID
+                </TableHead>
+                <TableHead className="text-slate-500 font-medium">
+                  ชื่ออุปกรณ์
+                </TableHead>
+                <TableHead className="text-slate-500 font-medium">
+                  ประเภท
+                </TableHead>
+                <TableHead className="text-right text-slate-500 font-medium">
+                  จัดการ
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {resources.map((resource) => (
-                <TableRow key={resource.id}>
-                  <TableCell>{resource.id}</TableCell>
-                  <TableCell className="font-bold">
+                <TableRow
+                  key={resource.id}
+                  className="hover:bg-slate-50/50 border-b border-slate-50 last:border-none"
+                >
+                  <TableCell className="font-medium">{resource.id}</TableCell>
+                  <TableCell className="font-bold text-slate-800">
                     {resource.resource_name}
                   </TableCell>
                   <TableCell>
-                    <span className="px-2 py-1 bg-slate-100 rounded text-xs">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
                       {resource.type === "equipment"
                         ? "อุปกรณ์"
                         : resource.type === "catering"
@@ -179,6 +198,7 @@ export default function AdminResourcesPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      className="rounded-full border-slate-200 hover:bg-slate-50 text-slate-500"
                       onClick={() => openEditModal(resource)}
                     >
                       <Edit size={16} />
@@ -186,6 +206,7 @@ export default function AdminResourcesPage() {
                     <Button
                       variant="destructive"
                       size="sm"
+                      className="rounded-full bg-slate-50 hover:bg-red-50 text-slate-500 hover:text-red-500 border border-transparent hover:border-red-100 shadow-none"
                       onClick={() => handleDelete(resource.id)}
                     >
                       <Trash2 size={16} />
@@ -193,25 +214,35 @@ export default function AdminResourcesPage() {
                   </TableCell>
                 </TableRow>
               ))}
+              {resources.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={4}
+                    className="text-center h-24 text-slate-500"
+                  >
+                    ไม่มีข้อมูลอุปกรณ์
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-106.25 bg-white">
-          <DialogHeader>
-            <DialogTitle>
+        <DialogContent className="sm:max-w-[500px] bg-white rounded-3xl p-6">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-2xl font-bold text-center text-slate-800">
               {editingResource ? "แก้ไขอุปกรณ์" : "เพิ่มอุปกรณ์ใหม่"}
             </DialogTitle>
             <DialogDescription className="sr-only">
               แบบฟอร์มจัดการอุปกรณ์
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="resource_name">ชื่ออุปกรณ์</Label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-slate-600 font-medium">ชื่ออุปกรณ์</Label>
               <Input
                 id="resource_name"
                 value={formData.resource_name}
@@ -219,15 +250,17 @@ export default function AdminResourcesPage() {
                   setFormData({ ...formData, resource_name: e.target.value })
                 }
                 required
+                placeholder="ระบุชื่ออุปกรณ์..."
+                className="rounded-xl border-slate-200 h-11"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="type">ประเภท</Label>
+            <div className="space-y-1.5">
+              <Label className="text-slate-600 font-medium">ประเภท</Label>
               <Select
                 value={formData.type}
                 onValueChange={(val) => setFormData({ ...formData, type: val })}
               >
-                <SelectTrigger className="bg-white">
+                <SelectTrigger className="bg-white rounded-xl border-slate-200 h-11">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
@@ -238,12 +271,20 @@ export default function AdminResourcesPage() {
                 </SelectContent>
               </Select>
             </div>
-            <DialogFooter>
+            <DialogFooter className="flex justify-center gap-3 pt-4 sm:justify-center">
               <Button
                 type="submit"
-                className="bg-tu-pink hover:bg-tu-pink-hover text-white"
+                className="bg-tu-pink hover:bg-tu-pink-hover text-white rounded-md px-8 py-2 h-auto"
               >
-                บันทึก
+                {editingResource ? "บันทึกการแก้ไข" : "เพิ่มอุปกรณ์"}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                className="bg-slate-500 hover:bg-slate-600 text-white rounded-md px-8 py-2 h-auto"
+                onClick={() => setIsModalOpen(false)}
+              >
+                ยกเลิก
               </Button>
             </DialogFooter>
           </form>

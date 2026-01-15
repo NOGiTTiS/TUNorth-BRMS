@@ -12,6 +12,7 @@ const prompt = Prompt({
   subsets: ["thai", "latin"],
   weight: ["300", "400", "500", "700"],
   variable: "--font-prompt",
+  display: "swap",
 });
 
 export default function RootLayout({
@@ -27,8 +28,9 @@ export default function RootLayout({
   }, [initializeAuth]);
 
   return (
-    <html lang="th">
-      <body className="...">
+    <html lang="th" className={`${prompt.variable}`}>
+      {/* เพิ่ม bg-slate-100 ให้ body */}
+      <body className={`${prompt.className} font-sans antialiased bg-slate-50`}>
         <div className="flex flex-col md:flex-row min-h-screen">
           <MobileNav />
           <Sidebar />
@@ -36,8 +38,6 @@ export default function RootLayout({
             {children}
           </main>
         </div>
-
-        {/* เปลี่ยนจาก <Toaster /> ธรรมดา เป็นของ Sonner */}
         <Toaster position="top-center" richColors />
       </body>
     </html>

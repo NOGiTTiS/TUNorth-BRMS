@@ -172,46 +172,72 @@ export default function AdminRoomsPage() {
   if (loading) return <div className="p-10 text-center">Loading...</div>;
 
   return (
-    <div className="container mx-auto py-10 px-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <DoorOpen /> จัดการข้อมูลห้องประชุม
-          </CardTitle>
-          <Button
-            onClick={openAddModal}
-            className="bg-tu-pink hover:bg-tu-pink-hover text-white"
-          >
-            <Plus className="mr-2 h-4 w-4" /> เพิ่มห้องใหม่
-          </Button>
-        </CardHeader>
-        <CardContent>
+    <div className="container mx-auto py-10 px-4 space-y-8">
+      {/* 1. Header & Toolbar Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800">
+            จัดการข้อมูลห้องประชุม
+          </h1>
+          <p className="text-slate-500 mt-1">
+            บริหารจัดการห้องประชุมและอุปกรณ์ภายใน
+          </p>
+        </div>
+
+        <Button
+          onClick={openAddModal}
+          className="bg-tu-pink hover:bg-tu-pink-hover text-white rounded-full shadow-lg shadow-tu-pink/30"
+        >
+          <Plus className="mr-2 h-4 w-4" /> เพิ่มห้องใหม่
+        </Button>
+      </div>
+
+      {/* 2. Table Section (Card) */}
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="p-6">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="w-12.5">ID</TableHead>
-                <TableHead>สี</TableHead>
-                <TableHead>ชื่อห้อง</TableHead>
-                <TableHead>ความจุ</TableHead>
-                <TableHead>สถานะ</TableHead>
-                <TableHead className="text-right">จัดการ</TableHead>
+              <TableRow className="hover:bg-transparent border-b border-slate-100">
+                <TableHead className="w-12.5 text-slate-500 font-medium">
+                  ID
+                </TableHead>
+                <TableHead className="text-slate-500 font-medium">สี</TableHead>
+                <TableHead className="text-slate-500 font-medium">
+                  ชื่อห้อง
+                </TableHead>
+                <TableHead className="text-slate-500 font-medium">
+                  ความจุ
+                </TableHead>
+                <TableHead className="text-slate-500 font-medium">
+                  สถานะ
+                </TableHead>
+                <TableHead className="text-right text-slate-500 font-medium">
+                  จัดการ
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rooms.map((room) => (
-                <TableRow key={room.id}>
-                  <TableCell>{room.id}</TableCell>
+                <TableRow
+                  key={room.id}
+                  className="hover:bg-slate-50/50 border-b border-slate-50 last:border-none"
+                >
+                  <TableCell className="font-medium">{room.id}</TableCell>
                   <TableCell>
                     <div
-                      className="w-6 h-6 rounded-full border shadow-sm"
+                      className="w-8 h-8 rounded-full border border-slate-200 shadow-sm"
                       style={{ backgroundColor: room.color }}
                     ></div>
                   </TableCell>
-                  <TableCell className="font-bold">{room.room_name}</TableCell>
-                  <TableCell>{room.capacity} คน</TableCell>
+                  <TableCell className="font-bold text-slate-800">
+                    {room.room_name}
+                  </TableCell>
+                  <TableCell className="text-slate-600">
+                    {room.capacity} คน
+                  </TableCell>
                   <TableCell>
                     <span
-                      className={`px-2 py-1 rounded text-xs font-bold ${
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
                         room.status === "active"
                           ? "bg-green-100 text-green-700"
                           : "bg-red-100 text-red-700"
@@ -224,6 +250,7 @@ export default function AdminRoomsPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      className="rounded-full border-slate-200 hover:bg-slate-50 text-slate-500"
                       onClick={() => openEditModal(room)}
                     >
                       <Edit size={16} />
@@ -231,6 +258,7 @@ export default function AdminRoomsPage() {
                     <Button
                       variant="destructive"
                       size="sm"
+                      className="rounded-full bg-slate-50 hover:bg-red-50 text-slate-500 hover:text-red-500 border border-transparent hover:border-red-100 shadow-none"
                       onClick={() => handleDelete(room.id)}
                     >
                       <Trash2 size={16} />
@@ -238,88 +266,116 @@ export default function AdminRoomsPage() {
                   </TableCell>
                 </TableRow>
               ))}
+              {rooms.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="text-center h-24 text-slate-500"
+                  >
+                    ไม่มีข้อมูลห้องประชุม
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Modal Form */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-106.25 bg-white">
-          <DialogHeader>
-                <DialogTitle>{editingRoom ? 'แก้ไขข้อมูลห้อง' : 'เพิ่มห้องประชุมใหม่'}</DialogTitle>
-                
-                {/* 2. เพิ่มบรรทัดนี้ครับ (ซ่อนไว้ด้วย sr-only) */}
-                <DialogDescription className="sr-only">
-                    แบบฟอร์มสำหรับกรอกรายละเอียดเพื่อเพิ่มหรือแก้ไขห้องประชุม
-                </DialogDescription>
-
-            </DialogHeader>
-          <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="room_name">ชื่อห้อง</Label>
+        <DialogContent className="sm:max-w-[500px] bg-white rounded-3xl p-6">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-2xl font-bold text-center text-slate-800">
+              {editingRoom ? "แก้ไขข้อมูลห้อง" : "เพิ่มห้องประชุมใหม่"}
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              แบบฟอร์มสำหรับกรอกรายละเอียดเพื่อเพิ่มหรือแก้ไขห้องประชุม
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-slate-600 font-medium">ชื่อห้อง</Label>
               <Input
-                id="room_name"
                 name="room_name"
                 value={formData.room_name}
                 onChange={handleChange}
                 required
+                placeholder="เช่น ห้องประชุม 1"
+                className="rounded-xl border-slate-200 h-11"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="capacity">ความจุ (คน)</Label>
-              <Input
-                id="capacity"
-                name="capacity"
-                type="number"
-                value={formData.capacity}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="color">สีประจำห้อง (Hex Code)</Label>
-              <div className="flex gap-2">
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-slate-600 font-medium">
+                  ความจุ (คน)
+                </Label>
                 <Input
-                  id="color"
-                  name="color"
+                  name="capacity"
+                  type="number"
+                  value={formData.capacity}
+                  onChange={handleChange}
+                  required
+                  placeholder="เช่น 50"
+                  className="rounded-xl border-slate-200 h-11"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-slate-600 font-medium">สถานะ</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(val) =>
+                    setFormData({ ...formData, status: val })
+                  }
+                >
+                  <SelectTrigger className="bg-white rounded-xl border-slate-200 h-11">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="active">พร้อมใช้งาน</SelectItem>
+                    <SelectItem value="maintenance">ปิดปรับปรุง</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-slate-600 font-medium">
+                สีประจำห้อง (สำหรับปฏิทิน)
+              </Label>
+              <div className="flex gap-3 items-center">
+                <Input
                   type="color"
-                  className="w-12 h-10 p-1"
+                  name="color"
                   value={formData.color}
                   onChange={handleChange}
+                  className="w-14 h-11 p-1 rounded-xl cursor-pointer border-slate-200"
                 />
                 <Input
                   name="color"
                   value={formData.color}
                   onChange={handleChange}
-                  className="uppercase"
+                  className="uppercase rounded-xl border-slate-200 h-11 flex-1"
                   maxLength={7}
+                  placeholder="#000000"
                 />
               </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="status">สถานะ</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(val) =>
-                  setFormData({ ...formData, status: val })
-                }
-              >
-                <SelectTrigger className="bg-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="active">พร้อมใช้งาน</SelectItem>
-                  <SelectItem value="maintenance">ปิดปรับปรุง</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <DialogFooter>
+
+            <DialogFooter className="flex justify-center gap-3 pt-4 sm:justify-center">
               <Button
                 type="submit"
-                className="bg-tu-pink hover:bg-tu-pink-hover text-white"
+                className="bg-tu-pink hover:bg-tu-pink-hover text-white rounded-md px-8 py-2 h-auto"
               >
-                บันทึกข้อมูล
+                {editingRoom ? "บันทึกการแก้ไข" : "เพิ่มห้องประชุม"}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                className="bg-slate-500 hover:bg-slate-600 text-white rounded-md px-8 py-2 h-auto"
+                onClick={() => setIsModalOpen(false)}
+              >
+                ยกเลิก
               </Button>
             </DialogFooter>
           </form>

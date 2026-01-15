@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, UserPlus, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -95,149 +95,179 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-lg shadow-xl border-t-4 border-tu-pink">
-        <CardHeader className="text-center space-y-1">
-          <CardTitle className="text-2xl font-bold text-tu-pink">
-            ลงทะเบียนสมาชิกใหม่
-          </CardTitle>
-          <CardDescription>
-            กรอกข้อมูลเพื่อสร้างบัญชีผู้ใช้งานระบบจองห้องประชุม
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans relative">
+      <Card className="w-full max-w-2xl shadow-2xl border-none rounded-3xl overflow-hidden z-10">
+        <div className="bg-slate-900 p-8 text-center relative overflow-hidden rounded-t-3xl">
+          {/* Decorative Circle */}
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-tu-pink rounded-full opacity-20 blur-2xl"></div>
+          <div className="absolute top-10 -left-10 w-24 h-24 bg-blue-500 rounded-full opacity-20 blur-2xl"></div>
+
+          <h1 className="text-2xl font-bold text-white tracking-wide">
+            สร้างบัญชีผู้ใช้งานใหม่
+          </h1>
+          <p className="text-slate-400 text-sm mt-2">
+            กรอกข้อมูลเพื่อเริ่มต้นใช้งานระบบจองห้องประชุม
+          </p>
+        </div>
+
+        <CardContent className="p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md flex items-center gap-2 animate-pulse">
-                <AlertCircle size={16} />
+              <div className="bg-red-50 text-red-600 text-sm p-4 rounded-xl flex items-center gap-3 border border-red-100 animate-pulse">
+                <AlertCircle size={18} />
                 {error}
               </div>
             )}
 
-            {/* ส่วนข้อมูลเข้าระบบ */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">
-                  ชื่อผู้ใช้งาน (Username){" "}
-                  <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="username"
-                  name="username"
-                  placeholder="ตั้งชื่อผู้ใช้ภาษาอังกฤษ"
-                  required
-                  value={formData.username}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">อีเมล</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="email@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Left Column: Account Info */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">
+                  ข้อมูลบัญชี
+                </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="password">
-                  รหัสผ่าน <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="username">
+                    Username <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="username"
+                    name="username"
+                    placeholder="ภาษาอังกฤษเท่านั้น"
+                    required
+                    value={formData.username}
+                    onChange={handleChange}
+                    className="rounded-xl bg-slate-50 border-slate-200 focus:bg-white h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">
+                    Password <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="rounded-xl bg-slate-50 border-slate-200 focus:bg-white h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">
+                    Confirm Password <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="rounded-xl bg-slate-50 border-slate-200 focus:bg-white h-11"
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">
-                  ยืนยันรหัสผ่าน <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
 
-            <hr className="border-gray-100 my-2" />
+              {/* Right Column: Personal Info */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">
+                  ข้อมูลส่วนตัว
+                </h3>
 
-            {/* ส่วนข้อมูลส่วนตัว */}
-            <div className="space-y-2">
-              <Label htmlFor="full_name">
-                ชื่อ-นามสกุล <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="full_name"
-                name="full_name"
-                placeholder="เช่น นายสมชาย ใจดี"
-                required
-                value={formData.full_name}
-                onChange={handleChange}
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="full_name">
+                    ชื่อ-นามสกุล <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="full_name"
+                    name="full_name"
+                    placeholder="เช่น นายสมชาย ใจดี"
+                    required
+                    value={formData.full_name}
+                    onChange={handleChange}
+                    className="rounded-xl bg-slate-50 border-slate-200 focus:bg-white h-11"
+                  />
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="department">ฝ่าย/กลุ่มสาระฯ</Label>
-                <Input
-                  id="department"
-                  name="department"
-                  placeholder="เช่น หมวดวิทย์"
-                  value={formData.department}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="tel">เบอร์โทรศัพท์</Label>
-                <Input
-                  id="tel"
-                  name="tel"
-                  placeholder="08x-xxx-xxxx"
-                  value={formData.tel}
-                  onChange={handleChange}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="email">
+                    อีเมล <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="example@school.ac.th"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="rounded-xl bg-slate-50 border-slate-200 focus:bg-white h-11"
+                  />
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="space-y-2 flex-1">
+                    <Label htmlFor="department">
+                      ฝ่าย/กลุ่มสาระ <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="department"
+                      name="department"
+                      value={formData.department}
+                      onChange={handleChange}
+                      className="rounded-xl bg-slate-50 border-slate-200 focus:bg-white h-11"
+                    />
+                  </div>
+                  <div className="space-y-2 w-1/3">
+                    <Label htmlFor="tel">
+                      เบอร์โทร <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="tel"
+                      name="tel"
+                      value={formData.tel}
+                      onChange={handleChange}
+                      className="rounded-xl bg-slate-50 border-slate-200 focus:bg-white h-11"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
             <Button
               type="submit"
-              className="w-full bg-tu-pink hover:bg-tu-pink-hover text-white mt-4"
+              className="w-full bg-tu-pink hover:bg-tu-pink-hover text-white rounded-full h-12 text-base font-bold shadow-lg shadow-tu-pink/20 mt-4"
               disabled={loading}
             >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
-                  กำลังบันทึก...
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />{" "}
+                  กำลังบันทึกข้อมูล...
                 </>
               ) : (
-                "ลงทะเบียน"
+                <>
+                  <UserPlus className="mr-2 h-5 w-5" /> ยืนยันการลงทะเบียน
+                </>
               )}
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="justify-center text-sm text-slate-500">
-          มีบัญชีผู้ใช้แล้ว?
-          <Link
-            href="/login"
-            className="text-tu-pink hover:underline ml-1 font-medium"
-          >
-            เข้าสู่ระบบ
-          </Link>
+        <CardFooter className="justify-center bg-slate-50/50">
+          <p className="text-sm text-slate-500">
+            มีบัญชีผู้ใช้แล้ว?
+            <Link
+              href="/login"
+              className="text-tu-pink hover:text-tu-pink-hover hover:underline ml-1 font-bold"
+            >
+              เข้าสู่ระบบ
+            </Link>
+          </p>
         </CardFooter>
       </Card>
+
+      {/* Background Decor */}
+      {/* <div className="fixed top-0 left-0 w-full h-1/3 bg-slate-900 -z-10 shadow-2xl"></div> */}
     </div>
   );
 }

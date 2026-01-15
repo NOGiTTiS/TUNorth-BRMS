@@ -13,7 +13,7 @@ import { Room } from "@/types/room";
 import { Booking } from "@/types/booking";
 import BookingDetailModal from "@/components/BookingDetailModal";
 import { useAuthStore } from "@/store/authStore";
-import { UserCircle } from "lucide-react";
+import { UserCircle, CalendarDays, Plus } from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
@@ -100,8 +100,8 @@ export default function Home() {
   // 5. ปรับหน้าตาภายในแถบ Event
   const renderEventContent = (eventInfo: any) => {
     return (
-      <div className="flex items-center w-full overflow-hidden px-1 py-0.5 cursor-pointer hover:opacity-90 transition-opacity">
-        <span className="font-bold bg-black/20 rounded-[2px] px-1 mr-1 text-[10px] whitespace-nowrap leading-tight">
+      <div className="flex items-center w-full overflow-hidden px-1.5 py-0.5 cursor-pointer hover:opacity-90 transition-opacity">
+        <span className="font-bold bg-white/20 rounded-[4px] px-1 mr-1.5 text-[10px] whitespace-nowrap leading-tight">
           {eventInfo.timeText}
         </span>
         <div className="flex flex-col overflow-hidden">
@@ -117,74 +117,120 @@ export default function Home() {
   if (!isMounted) return null;
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-3 md:p-6 h-full flex flex-col">
+    <div className=" bg-white rounded-3xl shadow-sm border border-slate-100 p-3 md:p-6 h-full flex flex-col font-sans">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-6 gap-3">
-        <h2 className="text-xl md:text-2xl font-bold text-slate-800 border-l-4 border-tu-pink pl-3 w-full md:w-auto">
-          ปฏิทินการจองห้องประชุม
-        </h2>
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <span className="bg-tu-pink/10 p-2.5 rounded-2xl text-tu-pink hidden md:block">
+            <CalendarDays size={28} />
+          </span>
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800">
+              ปฏิทินการจองห้องประชุม
+            </h2>
+            <p className="text-slate-500 text-sm hidden md:block">
+              ตรวจสอบตารางว่างและจองห้องประชุมออนไลน์
+            </p>
+          </div>
+        </div>
 
         {/* Logic ปุ่มขวาบน */}
-        {isAuthenticated ? (
-          <div className="flex items-center gap-4">
-            {user && (
-              <div className="hidden sm:flex items-center gap-2 text-sm text-gray-700 bg-gray-100 px-3 py-1.5 rounded-full">
-                <UserCircle size={18} />
-                <span className="font-medium truncate">{user.username}</span>
-                <span className="text-xs text-gray-500 border-l pl-2 ml-1">
-                  {user.role}
-                </span>
-              </div>
-            )}
+        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+          {isAuthenticated ? (
+            <>
+              {user && (
+                <div className="hidden sm:flex items-center gap-2 text-sm text-slate-700 bg-slate-50 border border-slate-100 px-4 py-2 rounded-full">
+                  <UserCircle size={18} className="text-tu-pink" />
+                  <span className="font-bold truncate">{user.username}</span>
+                  <span className="text-xs text-slate-400 border-l border-slate-300 pl-2 ml-1 uppercase font-semibold">
+                    {user.role}
+                  </span>
+                </div>
+              )}
 
+              <Button
+                onClick={() => router.push("/booking/create")}
+                className="w-full md:w-auto bg-tu-pink hover:bg-tu-pink-hover text-white rounded-full shadow-lg shadow-tu-pink/20 px-6"
+              >
+                <Plus className="mr-2 h-4 w-4" /> จองห้องประชุม
+              </Button>
+            </>
+          ) : (
             <Button
-              onClick={() => router.push("/booking/create")}
-              className="w-full md:w-auto sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+              onClick={() => router.push("/login")}
+              className="w-full md:w-auto bg-tu-pink hover:bg-tu-pink-hover text-white rounded-full px-8"
             >
-              + จองห้องประชุม
+              เข้าสู่ระบบ
             </Button>
-          </div>
-        ) : (
-          <Button
-            onClick={() => router.push("/login")}
-            className="w-full md:w-auto sm:w-auto bg-tu-pink hover:bg-tu-pink-hover text-white"
-          >
-            เข้าสู่ระบบ
-          </Button>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Calendar Area */}
-      <div className="flex-1 calendar-container text-sm md:text-base font-sans mb-6">
+      <div className="flex-1 calendar-container text-sm md:text-base mb-6">
         <style jsx global>{`
           .fc-header-toolbar {
             flex-wrap: wrap;
             gap: 0.5rem;
-            margin-bottom: 1rem !important;
+            margin-bottom: 1.5rem !important;
+          }
+          .fc-toolbar-title {
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+            color: #1e293b;
+          }
+          .fc-button {
+            border-radius: 9999px !important; /* Rounded full buttons */
+            font-weight: 500 !important;
+            text-transform: capitalize;
+            padding: 0.4rem 1rem !important;
+          }
+          .fc-button-primary {
+            background-color: white !important;
+            border-color: #e2e8f0 !important;
+            color: #64748b !important;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+          }
+          .fc-button-primary:hover {
+            background-color: #f8fafc !important;
+            border-color: #cbd5e1 !important;
+            color: #334155 !important;
+          }
+          .fc-button-active {
+            background-color: #f472b6 !important; /* tu-pink */
+            border-color: #f472b6 !important;
+            color: white !important;
           }
           .fc-col-header-cell-cushion {
             font-weight: 600;
-            color: #334155;
-            padding: 8px 0 !important;
-          }
-          .fc-button-primary {
-            background-color: #334155 !important;
-            border-color: #334155 !important;
+            color: #475569;
+            padding: 12px 0 !important;
+            text-decoration: none !important;
           }
           .fc-day-today {
-            background-color: #fdf2f8 !important;
+            background-color: #fdf2f8 !important; /* pink-50 */
           }
           .fc-daygrid-event {
             border: none !important;
             margin-top: 2px !important;
-            border-radius: 4px !important;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            border-radius: 8px !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
           }
           .fc-event-main {
-            color: white !important;
+            padding: 2px;
+          }
+          .fc-popover {
+            border-radius: 16px !important;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
+            border: 1px solid #f1f5f9 !important;
+          }
+          .fc-popover-header {
+            background: #f8fafc !important;
+            padding: 10px !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            border-radius: 16px 16px 0 0 !important;
           }
         `}</style>
-
         <FullCalendar
           plugins={[
             dayGridPlugin,
@@ -216,21 +262,26 @@ export default function Home() {
       </div>
 
       {/* Legend Area */}
-      <div className="border-t pt-4">
-        <h3 className="text-base font-bold text-slate-700 mb-3">
-          สีประจำห้อง:
+      <div className="border-t border-slate-100 pt-6">
+        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
+          ห้องประชุมและสีที่ใช้แสดง:
         </h3>
         {rooms.length === 0 ? (
           <p className="text-sm text-slate-400">กำลังโหลดข้อมูลห้อง...</p>
         ) : (
-          <div className="flex flex-wrap gap-x-6 gap-y-2">
+          <div className="flex flex-wrap gap-4">
             {rooms.map((room) => (
-              <div key={room.id} className="flex items-center gap-2">
+              <div
+                key={room.id}
+                className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100"
+              >
                 <span
-                  className="w-4 h-4 rounded-full shadow-sm shrink-0"
+                  className="w-3 h-3 rounded-full shrink-0"
                   style={{ backgroundColor: room.color || "#ccc" }}
                 ></span>
-                <span className="text-sm text-slate-600">{room.room_name}</span>
+                <span className="text-sm font-medium text-slate-700">
+                  {room.room_name}
+                </span>
               </div>
             ))}
           </div>

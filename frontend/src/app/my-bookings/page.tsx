@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { Booking } from "@/types/booking";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -31,7 +31,6 @@ export default function MyBookingsPage() {
 
     const fetchMyBookings = async () => {
       try {
-        // ส่ง query param ?user_id=... ไปด้วย
         const res = await fetch(
           `http://localhost:8080/api/bookings?user_id=${user.user_id}`,
           {
@@ -43,8 +42,6 @@ export default function MyBookingsPage() {
 
         if (res.ok) {
           const data = await res.json();
-          // เรียงวันที่ล่าสุดขึ้นก่อน
-          // ถ้า data เป็น null ให้ใช้ [] แทน
           const safeData = Array.isArray(data) ? data : [];
           const sorted = safeData.sort((a: Booking, b: Booking) => b.id - a.id);
           setBookings(sorted);
@@ -72,39 +69,55 @@ export default function MyBookingsPage() {
   if (loading) return <div className="p-10 text-center">Loading...</div>;
 
   return (
-    <div className="container mx-auto py-10 px-4">
-      <Button
-        variant="ghost"
-        onClick={() => router.back()}
-        className="mb-4 text-slate-500 hover:text-tu-pink pl-0"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" /> กลับ
-      </Button>
+    <div className="container mx-auto py-10 px-4 space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+            <span className="bg-tu-pink/10 p-2 rounded-xl text-tu-pink">
+              <CalendarClock size={32} />
+            </span>
+            ประวัติการจองของฉัน
+          </h1>
+          <p className="text-slate-500 mt-1 ml-14">
+            ติดตามสถานะการจองห้องประชุมของคุณ
+          </p>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle className="text-2xl font-bold text-tu-pink flex items-center gap-2">
-            <CalendarClock /> ประวัติการจองของฉัน
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="p-6">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>หัวข้อการประชุม</TableHead>
-                <TableHead>ห้อง</TableHead>
-                <TableHead>เวลาที่จอง</TableHead>
-                <TableHead>สถานะ</TableHead>
+              <TableRow className="hover:bg-transparent border-b border-slate-100">
+                <TableHead className="text-slate-500 font-medium">
+                  หัวข้อการประชุม
+                </TableHead>
+                <TableHead className="text-slate-500 font-medium">
+                  ห้อง
+                </TableHead>
+                <TableHead className="text-slate-500 font-medium">
+                  เวลาที่จอง
+                </TableHead>
+                <TableHead className="text-slate-500 font-medium">
+                  สถานะ
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {bookings.map((booking) => (
-                <TableRow key={booking.id}>
-                  <TableCell className="font-medium">
+                <TableRow
+                  key={booking.id}
+                  className="hover:bg-slate-50/50 border-b border-slate-50 last:border-none"
+                >
+                  <TableCell className="font-medium text-slate-800">
                     {booking.subject}
-                    {/* แสดงเหตุผลถ้าถูกปฏิเสธ (ถ้ามี field reject_reason ในอนาคต) */}
                   </TableCell>
-                  <TableCell>{booking.room?.room_name}</TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                      {booking.room?.room_name}
+                    </span>
+                  </TableCell>
                   <TableCell className="text-sm">
                     <div className="text-slate-600">
                       {formatDate(booking.start_time)}
@@ -115,22 +128,24 @@ export default function MyBookingsPage() {
                   </TableCell>
                   <TableCell>
                     {booking.status === "pending" && (
-                      <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-yellow-200">
+                      <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-0 shadow-none">
                         รออนุมัติ
                       </Badge>
                     )}
                     {booking.status === "approved" && (
-                      <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200">
+                      <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-0 shadow-none">
                         อนุมัติแล้ว
                       </Badge>
                     )}
                     {booking.status === "rejected" && (
-                      <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200">
+                      <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-0 shadow-none">
                         ไม่อนุมัติ
                       </Badge>
                     )}
                     {booking.status === "cancelled" && (
-                      <Badge variant="outline">ยกเลิก</Badge>
+                      <Badge variant="outline" className="text-slate-500">
+                        ยกเลิก
+                      </Badge>
                     )}
                   </TableCell>
                 </TableRow>
@@ -142,14 +157,16 @@ export default function MyBookingsPage() {
                     colSpan={4}
                     className="text-center h-32 text-slate-500"
                   >
-                    คุณยังไม่มีรายการจองห้องประชุม
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <p>คุณยังไม่มีรายการจองห้องประชุม</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

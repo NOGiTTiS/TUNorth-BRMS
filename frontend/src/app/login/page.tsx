@@ -1,50 +1,55 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { AlertCircle, Loader2 } from 'lucide-react';
-import { useAuthStore } from '@/store/authStore';
-import Link from 'next/link';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { AlertCircle, Loader2, LogIn } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
-  const login = useAuthStore((state) => state.login); 
+  const login = useAuthStore((state) => state.login);
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8080/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("http://localhost:8080/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || 'Login failed');
+      if (!res.ok) throw new Error(data.error || "Login failed");
 
       // 1. เรียก login เพื่ออัปเดต Store
       login(data.token);
-      
+
       // 2. ใช้ setTimeout เล็กน้อยเพื่อให้ State Propagation ทำงานทัน
-      // หรือใช้ useEffect check state ก็ได้ แต่วิธีนี้ง่ายและได้ผลดี
       setTimeout(() => {
-          router.push('/');
-          router.refresh(); // บังคับ Refresh ข้อมูลในหน้านั้นใหม่ (สำคัญสำหรับ Next.js App Router)
-      }, 100);
-      
+        router.push("/");
+        router.refresh(); // บังคับ Refresh ข้อมูลในหน้านั้นใหม่ (สำคัญสำหรับ Next.js App Router)
+      }, 500);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -53,64 +58,103 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md shadow-xl border-t-4 border-tu-pink">
-        <CardHeader className="text-center space-y-1">
-          <CardTitle className="text-2xl font-bold text-tu-pink">TUNorth BRMS</CardTitle>
+    <div className="flex items-center justify-center bg-slate-50 font-sans">
+      <Card className="w-full max-w-md shadow-2xl border-none rounded-3xl overflow-hidden ">
+        <div className="bg-slate-900 p-6 text-center rounded-t-3xl">
+          <h1 className="text-3xl font-bold text-tu-pink tracking-wider">
+            TUNorth-BRMS
+          </h1>
+          <p className="text-slate-400 text-sm mt-2">
+            ระบบจองห้องประชุมออนไลน์
+          </p>
+        </div>
+
+        <CardHeader className="text-center pb-2 pt-2">
+          <CardTitle className="text-xl font-bold text-slate-800">
+            เข้าสู่ระบบ
+          </CardTitle>
           <CardDescription>
-            เข้าสู่ระบบจองห้องประชุม โรงเรียนเตรียมอุดมศึกษา ภาคเหนือ
+            กรุณากรอกชื่อผู้ใช้งานและรหัสผ่านเพื่อดำเนินการต่อ
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            
+
+        <CardContent className="space-y-4 px-8 pb-4">
+          <form onSubmit={handleLogin} className="space-y-5">
             {error && (
-              <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md flex items-center gap-2">
+              <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl flex items-center gap-2 border border-red-100">
                 <AlertCircle size={16} />
                 {error}
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="username">ชื่อผู้ใช้งาน</Label>
-              <Input 
-                id="username" 
-                placeholder="กรอกชื่อผู้ใช้งาน" 
+              <Label
+                htmlFor="username"
+                className="text-slate-700 font-medium ml-1"
+              >
+                ชื่อผู้ใช้งาน
+              </Label>
+              <Input
+                id="username"
+                placeholder="กรอกชื่อผู้ใช้งานของคุณ"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
+                className="rounded-full h-12 px-4 bg-slate-50 border-slate-200 focus:bg-white transition-all shadow-sm"
               />
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="password">รหัสผ่าน</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                placeholder="กรอกรหัสผ่าน" 
+              <Label
+                htmlFor="password"
+                className="text-slate-700 font-medium ml-1"
+              >
+                รหัสผ่าน
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="rounded-full h-12 px-4 bg-slate-50 border-slate-200 focus:bg-white transition-all shadow-sm"
               />
             </div>
 
-            <Button 
-                type="submit" 
-                className="w-full bg-tu-pink hover:bg-tu-pink-hover text-white" 
-                disabled={loading}
+            <Button
+              type="submit"
+              className="w-full bg-tu-pink hover:bg-tu-pink-hover text-white rounded-full h-12 text-base font-semibold shadow-lg shadow-tu-pink/20 mt-2"
+              disabled={loading}
             >
-              {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> กำลังตรวจสอบ...</> : 'เข้าสู่ระบบ'}
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />{" "}
+                  กำลังตรวจสอบ...
+                </>
+              ) : (
+                <>
+                  <LogIn className="mr-2 h-5 w-5" /> เข้าสู่ระบบ
+                </>
+              )}
             </Button>
-
           </form>
         </CardContent>
-        <CardFooter className="justify-center text-sm text-slate-500">
-          ยังไม่มีบัญชีผู้ใช้? 
-          <Link href="/register" className="text-tu-pink hover:underline ml-1 font-medium">
-            ลงทะเบียน
-          </Link>
+        <CardFooter className="flex flex-col items-center justify-center p-2 bg-slate-50/50 mt-2">
+          <p className="text-sm text-slate-500">
+            ยังไม่มีบัญชีผู้ใช้?
+            <Link
+              href="/register"
+              className="text-tu-pink hover:text-tu-pink-hover hover:underline ml-1 font-bold"
+            >
+              ลงทะเบียนใหม่
+            </Link>
+          </p>
         </CardFooter>
       </Card>
+
+      {/* Background Decor */}
+      {/* <div className="fixed top-0 left-0 w-full h-1/2 bg-slate-900 -z-10 rounded-b-[3rem] shadow-2xl"></div> */}
     </div>
   );
 }

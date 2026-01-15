@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { User } from "@/types/user"; // ตรวจสอบว่ามีไฟล์นี้แล้ว หรือสร้างใหม่ตาม Step ก่อนหน้า
+import { User } from "@/types/user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -48,12 +48,12 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // State สำหรับ Edit Modal
+  // State for Edit Modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<Partial<User>>({});
 
-  // State สำหรับ Import Modal
+  // State for Import Modal
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
 
@@ -65,7 +65,7 @@ export default function AdminUsersPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        // เรียงลำดับ ID ล่าสุดขึ้นก่อน
+        // Sort by latest ID
         setUsers(data.sort((a: User, b: User) => b.id - a.id));
       }
     } catch (error) {
@@ -97,30 +97,46 @@ export default function AdminUsersPage() {
     setIsEditModalOpen(true);
   };
 
-  const handleUpdate = async (e: React.FormEvent) => {
+  // 2. Create / Update Logic
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingUser) return;
 
     try {
-      const res = await fetch(
-        `http://localhost:8080/api/users/${editingUser.id}`,
-        {
-          method: "PUT",
+      if (editingUser) {
+        // Update Mode
+        const res = await fetch(
+          `http://localhost:8080/api/users/${editingUser.id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData),
+          }
+        );
+        if (!res.ok) throw new Error("Failed to update");
+        toast.success("แก้ไขข้อมูลผู้ใช้สำเร็จ");
+      } else {
+        // Create Mode
+        const res = await fetch("http://localhost:8080/api/users", {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(formData),
-        }
-      );
+        });
+        if (!res.ok) throw new Error("Failed to create");
+        toast.success("เพิ่มผู้ใช้งานสำเร็จ");
+      }
 
-      if (!res.ok) throw new Error("Failed to update");
-
-      toast.success("แก้ไขข้อมูลผู้ใช้สำเร็จ");
       setIsEditModalOpen(false);
       fetchUsers();
     } catch (error) {
-      toast.error("เกิดข้อผิดพลาดในการแก้ไข");
+      toast.error(
+        editingUser ? "เกิดข้อผิดพลาดในการแก้ไข" : "เกิดข้อผิดพลาดในการเพิ่ม"
+      );
     }
   };
 
@@ -187,10 +203,8 @@ export default function AdminUsersPage() {
     }
   };
 
-  // ฟังก์ชันสร้างลิงก์ดาวน์โหลด Template CSV
+  // Function to create template link
   const getTemplateLink = () => {
-    // Header และ ข้อมูลตัวอย่าง
-    // \uFEFF คือ BOM (Byte Order Mark) เพื่อให้ Excel เปิดภาษาไทยได้ถูกต้อง
     const csvContent =
       "\uFEFFusername,password,full_name,department,tel,email,role\nteacher99,pass1234,ครูตัวอย่าง ทดสอบ,หมวดวิทย์,0811112222,example@tu.ac.th,user";
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -200,166 +214,300 @@ export default function AdminUsersPage() {
   if (loading) return <div className="p-10 text-center">Loading...</div>;
 
   return (
-    <div className="container mx-auto py-10 px-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <Users /> จัดการผู้ใช้งาน
-          </CardTitle>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => setIsImportModalOpen(true)}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              <FileUp className="mr-2 h-4 w-4" /> Import CSV
-            </Button>
+    <div className="container mx-auto py-10 px-4 space-y-8">
+      {/* 1. Header & Toolbar Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800">จัดการผู้ใช้งาน</h1>
+          <p className="text-slate-500 mt-1">
+            ดูแลสิทธิการเข้าถึงของครูและนักเรียน
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {/* Search Box */}
+          <div className="relative w-64">
+            <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="ค้นหา..."
+              className="pl-9 bg-white border-slate-200 rounded-full"
+            />
           </div>
-        </CardHeader>
-        <CardContent>
+
+          {/* Action Buttons */}
+          <Button
+            variant="outline"
+            className="hidden md:flex bg-white border-slate-200 rounded-full"
+            onClick={() => window.open(getTemplateLink())}
+          >
+            <Download className="mr-2 h-4 w-4" /> ตัวอย่าง CSV
+          </Button>
+
+          <Button
+            className="bg-slate-900 text-white hover:bg-slate-800 rounded-full"
+            onClick={() => setIsImportModalOpen(true)}
+          >
+            <FileUp className="mr-2 h-4 w-4" /> Import
+          </Button>
+
+          <Button
+            className="bg-tu-pink hover:bg-tu-pink-hover text-white rounded-full shadow-lg shadow-tu-pink/30"
+            onClick={() => {
+              setEditingUser(null);
+              setFormData({ role: "user" }); // Default
+              setIsEditModalOpen(true);
+            }}
+          >
+            <Users className="mr-2 h-4 w-4" /> เพิ่มผู้ใช้
+          </Button>
+        </div>
+      </div>
+
+      {/* 2. Table Section (Card) */}
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="p-6">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="w-12.5">ID</TableHead>
-                <TableHead>Username</TableHead>
-                <TableHead>ชื่อ-สกุล</TableHead>
-                <TableHead>ฝ่ายงาน</TableHead>
-                <TableHead>เบอร์โทร</TableHead>
-                <TableHead>สถานะ</TableHead>
-                <TableHead className="text-right">จัดการ</TableHead>
+              <TableRow className="hover:bg-transparent border-b border-slate-100">
+                <TableHead className="w-[300px] text-slate-500 font-medium">
+                  ข้อมูลผู้ใช้
+                </TableHead>
+                <TableHead className="text-slate-500 font-medium">
+                  บทบาท
+                </TableHead>
+                <TableHead className="text-slate-500 font-medium">
+                  อีเมล
+                </TableHead>
+                <TableHead className="text-right text-slate-500 font-medium">
+                  จัดการ
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.map((u) => (
-                <TableRow key={u.id}>
-                  <TableCell>{u.id}</TableCell>
-                  <TableCell className="font-mono text-slate-600">
-                    {u.username}
+                <TableRow
+                  key={u.id}
+                  className="hover:bg-slate-50/50 border-b border-slate-50 last:border-none"
+                >
+                  <TableCell className="py-4">
+                    <div className="flex items-center gap-4">
+                      {/* Avatar Initials with Defensive Check */}
+                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm">
+                        {(u.username || "?").slice(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        {/* Name with Fallback */}
+                        <div className="font-bold text-slate-800">
+                          {u.full_name || u.username || "Unknown"}
+                        </div>
+                        <div className="text-xs text-slate-400 uppercase tracking-wide">
+                          {u.username || "-"}
+                        </div>
+                      </div>
+                    </div>
                   </TableCell>
-                  <TableCell className="font-bold">{u.full_name}</TableCell>
-                  <TableCell>{u.department}</TableCell>
-                  <TableCell>{u.tel}</TableCell>
+
                   <TableCell>
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-bold ${
-                        u.role === "admin"
-                          ? "bg-purple-100 text-purple-700"
-                          : "bg-slate-100 text-slate-700"
-                      }`}
-                    >
-                      {u.role === "admin" ? "ผู้ดูแลระบบ" : "ผู้ใช้ทั่วไป"}
-                    </span>
+                    {u.role === "admin" && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-600">
+                        ADMIN
+                      </span>
+                    )}
+                    {u.role === "teacher" && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-600">
+                        TEACHER
+                      </span>
+                    )}
+                    {(u.role === "user" || u.role === "student") && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-600">
+                        STUDENT
+                      </span>
+                    )}
                   </TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditModal(u)}
-                    >
-                      <Edit size={16} />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(u.id)}
-                      disabled={u.id === currentUser?.user_id}
-                    >
-                      <Trash2 size={16} />
-                    </Button>
+
+                  <TableCell className="text-slate-500 text-sm">
+                    {u.email || "-"}
+                  </TableCell>
+
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-tu-pink"
+                        onClick={() => openEditModal(u)}
+                      >
+                        <Edit size={16} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-full bg-slate-50 hover:bg-red-50 text-slate-500 hover:text-red-500"
+                        onClick={() => handleDelete(u.id)}
+                        disabled={u.id === currentUser?.user_id}
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
+              {users.length === 0 && !loading && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-10">
+                    <div className="flex flex-col items-center justify-center text-slate-400">
+                      <Users className="h-10 w-10 mb-2 opacity-20" />
+                      <p>ไม่พบข้อมูลผู้ใช้งาน</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* --- Edit Modal --- */}
+      {/* --- Edit/Create Modal --- */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="sm:max-w-125 bg-white">
-          <DialogHeader>
-            <DialogTitle>
-              แก้ไขข้อมูลผู้ใช้งาน: {editingUser?.username}
+        <DialogContent className="sm:max-w-[500px] bg-white rounded-3xl p-6">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-2xl font-bold text-center text-slate-800">
+              {editingUser ? "แก้ไขข้อมูลผู้ใช้งาน" : "เพิ่มผู้ใช้งานใหม่"}
             </DialogTitle>
             <DialogDescription className="sr-only">
-              แบบฟอร์มแก้ไข
+              แบบฟอร์มจัดการผู้ใช้งาน
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleUpdate} className="grid gap-4 py-4">
-            {/* Form Inputs (เหมือนเดิม) */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>ชื่อ-สกุล</Label>
-                <Input
-                  value={formData.full_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, full_name: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>ฝ่ายงาน</Label>
-                <Input
-                  value={formData.department}
-                  onChange={(e) =>
-                    setFormData({ ...formData, department: e.target.value })
-                  }
-                />
-              </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Full Name */}
+            <div className="space-y-1.5">
+              <Label className="text-slate-600 font-medium">ชื่อ-นามสกุล</Label>
+              <Input
+                value={formData.full_name || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, full_name: e.target.value })
+                }
+                placeholder="ชื่อ-นามสกุล"
+                className="rounded-xl border-slate-200 h-11"
+              />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>เบอร์โทร</Label>
-                <Input
-                  value={formData.tel}
-                  onChange={(e) =>
-                    setFormData({ ...formData, tel: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>อีเมล</Label>
-                <Input
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                />
-              </div>
+
+            {/* Email */}
+            <div className="space-y-1.5">
+              <Label className="text-slate-600 font-medium">อีเมล</Label>
+              <Input
+                value={formData.email || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                placeholder="example@cpms.com"
+                className="rounded-xl border-slate-200 h-11"
+              />
             </div>
-            <div className="space-y-2">
-              <Label>สิทธิ์การใช้งาน (Role)</Label>
-              <Select
-                value={formData.role}
-                onValueChange={(val) => setFormData({ ...formData, role: val })}
-              >
-                <SelectTrigger className="bg-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="user">ผู้ใช้ทั่วไป (User)</SelectItem>
-                  <SelectItem value="admin">ผู้ดูแลระบบ (Admin)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2 pt-2 border-t mt-2">
-              <Label className="text-red-500">
-                เปลี่ยนรหัสผ่าน (เว้นว่างไว้ถ้าไม่เปลี่ยน)
+
+            {/* Password */}
+            <div className="space-y-1.5">
+              <Label className="text-slate-600 font-medium">
+                {editingUser
+                  ? "รหัสผ่าน (เว้นว่างไว้ถ้าไม่เปลี่ยน)"
+                  : "รหัสผ่าน"}
               </Label>
               <Input
                 type="password"
-                placeholder="ตั้งรหัสผ่านใหม่..."
-                value={formData.password}
+                placeholder={
+                  editingUser ? "ตั้งรหัสผ่านใหม่..." : "ระบุรหัสผ่าน"
+                }
+                value={formData.password || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
+                required={!editingUser}
+                className="rounded-xl border-slate-200 h-11"
               />
             </div>
-            <DialogFooter>
+
+            {/* Role & Dep/Class (2 Columns) */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-slate-600 font-medium">
+                  บทบาท (ROLE)
+                </Label>
+                <Select
+                  value={formData.role || "user"}
+                  onValueChange={(val) =>
+                    setFormData({ ...formData, role: val })
+                  }
+                >
+                  <SelectTrigger className="bg-white rounded-xl border-slate-200 h-11">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="user">USER (General)</SelectItem>
+                    <SelectItem value="student">STUDENT</SelectItem>
+                    <SelectItem value="teacher">TEACHER</SelectItem>
+                    <SelectItem value="admin">ADMIN</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-slate-600 font-medium">
+                  ชั้น/ห้อง (เฉพาะนักเรียน)
+                </Label>
+                <Input
+                  value={formData.department || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, department: e.target.value })
+                  }
+                  placeholder="-- ไม่ระบุ --"
+                  className="rounded-xl border-slate-200 h-11"
+                />
+              </div>
+            </div>
+
+            {/* Username / Student ID */}
+            <div className="space-y-1.5">
+              <Label className="text-slate-600 font-medium">
+                รหัสนักเรียน (ถ้ามี) / Username
+              </Label>
+              <Input
+                value={formData.username || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, username: e.target.value })
+                }
+                disabled={!!editingUser}
+                placeholder="เช่น 12345"
+                required
+                className="rounded-xl border-slate-200 h-11"
+              />
+            </div>
+
+            {/* Tel (Hidden/Optional in visual ref, keeping it but maybe at bottom or removed? keeping as hidden for now to match visual or just put at bottom) */}
+            <div className="space-y-1.5 hidden">
+              <Label>เบอร์โทร</Label>
+              <Input
+                value={formData.tel || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, tel: e.target.value })
+                }
+              />
+            </div>
+
+            <DialogFooter className="flex justify-center gap-3 pt-4 sm:justify-center">
               <Button
                 type="submit"
-                className="bg-tu-pink hover:bg-tu-pink-hover text-white"
+                className="bg-tu-pink hover:bg-tu-pink-hover text-white rounded-md px-8 py-2 h-auto"
               >
-                บันทึกการแก้ไข
+                {editingUser ? "บันทึกการแก้ไข" : "สร้างผู้ใช้ใหม่"}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                className="bg-slate-500 hover:bg-slate-600 text-white rounded-md px-8 py-2 h-auto"
+                onClick={() => setIsEditModalOpen(false)}
+              >
+                Cancel
               </Button>
             </DialogFooter>
           </form>
@@ -377,7 +525,7 @@ export default function AdminUsersPage() {
           </DialogHeader>
 
           <form onSubmit={handleImport} className="grid gap-6 py-4">
-            {/* ส่วนดาวน์โหลด Template */}
+            {/* Template Download */}
             <div className="bg-slate-50 p-4 rounded-lg border border-dashed border-slate-300">
               <div className="flex items-center gap-3 mb-2">
                 <FileSpreadsheet className="text-green-600" size={24} />

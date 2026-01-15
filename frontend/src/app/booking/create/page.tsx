@@ -5,13 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { Room } from "@/types/room";
 import { Resource } from "@/types/resource";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -24,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, CalendarPlus } from "lucide-react";
 import { toast } from "sonner";
 
 export default function CreateBookingPage() {
@@ -223,239 +217,293 @@ export default function CreateBookingPage() {
     return <div className="p-10 text-center">กำลังโหลดข้อมูล...</div>;
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-5xl font-sans">
-      <Button
-        variant="ghost"
-        onClick={() => router.back()}
-        className="mb-4 text-slate-500 hover:text-tu-pink pl-0"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" /> กลับหน้าปฏิทิน
-      </Button>
-
-      <Card className="shadow-sm border border-gray-200">
-        <CardHeader className="pb-4 border-b">
-          <CardTitle className="text-2xl font-bold text-black">
+    <div className="container mx-auto py-10 px-4 max-w-5xl font-sans space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+            <span className="bg-tu-pink/10 p-2 rounded-xl text-tu-pink">
+              <CalendarPlus size={32} />
+            </span>
             จองห้องประชุม
-          </CardTitle>
-          <CardDescription>
-            กรอกข้อมูลและอัปโหลดผังการจัดห้อง (ถ้ามี)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* แถว 1: ห้องประชุม - หัวข้อ */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="room" className="font-bold">
-                  ห้องประชุม <span className="text-red-500">*</span>
-                </Label>
-                <Select onValueChange={handleRoomChange} required>
-                  <SelectTrigger
-                    id="room"
-                    className="w-full h-11 bg-white border-slate-300 focus:ring-tu-pink"
+          </h1>
+          <p className="text-slate-500 mt-1 ml-14">
+            กรอกรายละเอียดเพื่อขอใช้ห้องประชุมและอุปกรณ์
+          </p>
+        </div>
+        {/* <Button
+          variant="outline"
+          onClick={() => router.back()}
+          className="rounded-full border-slate-200 text-slate-600 hover:text-tu-pink hover:border-tu-pink/50"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" /> กลับหน้าปฏิทิน
+        </Button> */}
+      </div>
+
+      <Card className="rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Section 1: ข้อมูลห้องและหัวข้อ */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2">
+                ข้อมูลการจอง
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="room" className="font-medium text-slate-700">
+                    ห้องประชุม <span className="text-red-500">*</span>
+                  </Label>
+                  <Select onValueChange={handleRoomChange} required>
+                    <SelectTrigger
+                      id="room"
+                      className="w-full h-12 bg-slate-50 border-slate-200 focus:ring-tu-pink rounded-xl"
+                    >
+                      <SelectValue placeholder="-- กรุณาเลือกห้อง --" />
+                    </SelectTrigger>
+                    <SelectContent
+                      position="popper"
+                      className="bg-white rounded-xl shadow-lg border-slate-100 w-[var(--radix-select-trigger-width)]"
+                    >
+                      {rooms.map((room) => (
+                        <SelectItem
+                          key={room.id}
+                          value={room.id.toString()}
+                          className="cursor-pointer focus:bg-tu-pink focus:text-white py-3 pl-4 rounded-lg my-1"
+                        >
+                          {room.room_name} (รองรับ {room.capacity} คน)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="subject"
+                    className="font-medium text-slate-700"
                   >
-                    <SelectValue placeholder="-- กรุณาเลือกห้อง --" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white z-9999">
-                    {rooms.map((room) => (
-                      <SelectItem
-                        key={room.id}
-                        value={room.id.toString()}
-                        className="cursor-pointer hover:bg-slate-100"
+                    หัวข้อการประชุม <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="subject"
+                    name="subject"
+                    required
+                    value={formData.subject}
+                    onChange={handleChange}
+                    className="h-12 bg-slate-50 border-slate-200 rounded-xl"
+                    placeholder="เช่น ประชุมวางแผนประจำเดือน"
+                  />
+                </div>
+              </div>
+
+              {/* วันเวลา */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label className="font-medium text-slate-700">
+                    วัน-เวลา เริ่มต้น <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="date"
+                      name="start_date"
+                      className="flex-1 h-12 bg-slate-50 border-slate-200 rounded-xl"
+                      required
+                      value={formData.start_date}
+                      onChange={handleChange}
+                    />
+                    <Input
+                      type="time"
+                      name="start_time"
+                      className="w-1/3 h-12 bg-slate-50 border-slate-200 rounded-xl"
+                      required
+                      value={formData.start_time}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-medium text-slate-700">
+                    วัน-เวลา สิ้นสุด <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="date"
+                      name="end_date"
+                      className="flex-1 h-12 bg-slate-50 border-slate-200 rounded-xl"
+                      required
+                      value={formData.end_date}
+                      onChange={handleChange}
+                    />
+                    <Input
+                      type="time"
+                      name="end_time"
+                      className="w-1/3 h-12 bg-slate-50 border-slate-200 rounded-xl"
+                      required
+                      value={formData.end_time}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: ข้อมูลผู้ติดต่อ */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2">
+                ข้อมูลผู้ติดต่อ
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="department"
+                    className="font-medium text-slate-700"
+                  >
+                    ฝ่าย/หน่วยงาน
+                  </Label>
+                  <Input
+                    id="department"
+                    name="department"
+                    value={formData.department}
+                    onChange={handleChange}
+                    className="h-12 bg-slate-50 border-slate-200 rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="font-medium text-slate-700">
+                    เบอร์โทรติดต่อ
+                  </Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="h-12 bg-slate-50 border-slate-200 rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="attendees"
+                    className="font-medium text-slate-700"
+                  >
+                    จำนวนผู้เข้าร่วม (คน)
+                  </Label>
+                  <Input
+                    id="attendees"
+                    name="attendees"
+                    type="number"
+                    min="1"
+                    value={formData.attendees}
+                    onChange={handleChange}
+                    className="h-12 bg-slate-50 border-slate-200 rounded-xl"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3: สิ่งอำนวยความสะดวก */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2">
+                สิ่งอำนวยความสะดวก
+              </h3>
+              <div className="space-y-3">
+                <Label className="font-medium text-slate-700">
+                  อุปกรณ์ที่ต้องการ
+                </Label>
+                {resourceOptions.length === 0 ? (
+                  <p className="text-sm text-slate-400">
+                    - ไม่มีข้อมูลอุปกรณ์ -
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                    {resourceOptions.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center space-x-3"
                       >
-                        {room.room_name} (รองรับ {room.capacity} คน)
-                      </SelectItem>
+                        <Checkbox
+                          id={item.id.toString()}
+                          onCheckedChange={(checked) =>
+                            handleResourceChange(
+                              checked as boolean,
+                              item.id.toString()
+                            )
+                          }
+                          className="rounded-md border-slate-300 data-[state=checked]:bg-tu-pink data-[state=checked]:border-tu-pink"
+                        />
+                        <label
+                          htmlFor={item.id.toString()}
+                          className="text-sm font-medium leading-none text-slate-600 cursor-pointer"
+                        >
+                          {item.resource_name}
+                        </label>
+                      </div>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                )}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="subject" className="font-bold">
-                  หัวข้อการประชุม <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="subject"
-                  name="subject"
-                  required
-                  value={formData.subject}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
 
-            {/* แถว 2: วันเวลาเริ่ม - วันเวลาสิ้นสุด */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label className="font-bold">วัน-เวลา เริ่ม</Label>
-                <div className="flex gap-2">
+                <Label className="font-medium text-slate-700">
+                  รูปแบบการจัดห้อง (ถ้ามี)
+                </Label>
+                <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
                   <Input
-                    type="date"
-                    name="start_date"
-                    className="flex-1"
-                    required
-                    value={formData.start_date}
-                    onChange={handleChange}
+                    id="layout_image"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      handleFileChange(e);
+                      const file = e.target.files?.[0];
+                      const span = document.getElementById("file-name-display");
+                      if (span)
+                        span.innerText = file ? file.name : "ไม่ได้เลือกไฟล์ใด";
+                    }}
                   />
-                  <Input
-                    type="time"
-                    name="start_time"
-                    className="w-1/3"
-                    required
-                    value={formData.start_time}
-                    onChange={handleChange}
-                  />
+                  <Label
+                    htmlFor="layout_image"
+                    className="bg-white text-slate-700 hover:text-tu-pink border border-slate-200 hover:border-tu-pink shadow-sm transition-all px-4 py-2 rounded-lg cursor-pointer text-sm font-medium"
+                  >
+                    เลือกไฟล์รูปภาพ
+                  </Label>
+                  <span
+                    id="file-name-display"
+                    className="text-sm text-slate-400 italic"
+                  >
+                    ไม่ได้เลือกไฟล์ใด
+                  </span>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label className="font-bold">วัน-เวลา สิ้นสุด</Label>
-                <div className="flex gap-2">
-                  <Input
-                    type="date"
-                    name="end_date"
-                    className="flex-1"
-                    required
-                    value={formData.end_date}
-                    onChange={handleChange}
-                  />
-                  <Input
-                    type="time"
-                    name="end_time"
-                    className="w-1/3"
-                    required
-                    value={formData.end_time}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-            </div>
 
-            {/* แถว 3: ฝ่าย - เบอร์โทร - จำนวนคน */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="department" className="font-bold">
-                  ฝ่าย/หน่วยงาน
+                <Label htmlFor="note" className="font-medium text-slate-700">
+                  หมายเหตุเพิ่มเติม
                 </Label>
-                <Input
-                  id="department"
-                  name="department"
-                  value={formData.department}
+                <Textarea
+                  id="note"
+                  name="note"
+                  className="min-h-25 bg-slate-50 border-slate-200 rounded-xl"
+                  value={formData.note}
                   onChange={handleChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="font-bold">
-                  เบอร์โทรติดต่อ
-                </Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="attendees" className="font-bold">
-                  จำนวนผู้เข้าร่วม
-                </Label>
-                <Input
-                  id="attendees"
-                  name="attendees"
-                  type="number"
-                  min="1"
-                  value={formData.attendees}
-                  onChange={handleChange}
+                  placeholder="รายละเอียดเพิ่มเติม..."
                 />
               </div>
             </div>
 
-            {/* แถว 4: อุปกรณ์ที่ต้องการ (Dynamic from DB) */}
-            <div className="space-y-3">
-              <Label className="font-bold">อุปกรณ์ที่ต้องการ</Label>
-              {resourceOptions.length === 0 ? (
-                <p className="text-sm text-slate-400">- ไม่มีข้อมูลอุปกรณ์ -</p>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {resourceOptions.map((item) => (
-                    <div key={item.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={item.id.toString()}
-                        onCheckedChange={(checked) =>
-                          handleResourceChange(
-                            checked as boolean,
-                            item.id.toString()
-                          )
-                        }
-                      />
-                      <label
-                        htmlFor={item.id.toString()}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-slate-600 cursor-pointer"
-                      >
-                        {item.resource_name}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* แถว 5: รูปแบบการจัดห้อง */}
-            <div className="space-y-2">
-              <Label className="font-bold">รูปแบบการจัดห้อง (ถ้ามี)</Label>
-              <div className="flex items-center gap-3">
-                <Input
-                  id="layout_image"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    handleFileChange(e);
-                    const file = e.target.files?.[0];
-                    const span = document.getElementById("file-name-display");
-                    if (span)
-                      span.innerText = file ? file.name : "ไม่ได้เลือกไฟล์ใด";
-                  }}
-                />
-                <Label
-                  htmlFor="layout_image"
-                  className="bg-tu-pink/10 text-tu-pink hover:bg-tu-pink hover:text-white border border-tu-pink transition-colors px-4 py-2 rounded-md cursor-pointer text-sm font-medium"
-                >
-                  เลือกไฟล์
-                </Label>
-                <span id="file-name-display" className="text-sm text-slate-500">
-                  ไม่ได้เลือกไฟล์ใด
-                </span>
-              </div>
-            </div>
-
-            {/* แถว 6: หมายเหตุ */}
-            <div className="space-y-2">
-              <Label htmlFor="note" className="font-bold">
-                หมายเหตุ
-              </Label>
-              <Textarea
-                id="note"
-                name="note"
-                className="min-h-25"
-                value={formData.note}
-                onChange={handleChange}
-              />
-            </div>
-
-            {/* ปุ่ม */}
-            <div className="pt-4 space-y-4">
-              <p className="text-red-600 font-bold text-sm text-center md:text-left">
+            {/* ปุ่มส่งข้อมูล */}
+            <div className="pt-6 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
+              <p className="text-red-500 font-medium text-sm text-center md:text-left bg-red-50 px-4 py-2 rounded-lg">
                 ** หากเป็นการจองในช่วงวันหยุด กรุณาประสานเจ้าหน้าที่
                 ที่สามารถมาปฏิบัติงานได้ ด้วยตนเอง **
               </p>
               <Button
                 type="submit"
-                className="bg-tu-pink hover:bg-tu-pink-hover text-white text-base px-8 py-2 h-auto"
+                className="bg-tu-pink hover:bg-tu-pink-hover text-white text-base px-10 py-4 rounded-full shadow-lg shadow-tu-pink/20 h-auto w-full md:w-auto"
                 disabled={loading}
               >
                 {loading ? (
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 ) : (
-                  "ส่งคำขอจอง"
+                  "ยินยันการจอง"
                 )}
               </Button>
             </div>
