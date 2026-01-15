@@ -41,8 +41,14 @@ export default function RootLayout({
         />
         {favicon && <link rel="icon" href={favicon} />}
       </head>
-      {/* เพิ่ม bg-slate-100 ให้ body */}
-      <body className={`${prompt.className} font-sans antialiased bg-slate-50`}>
+      {/* เพิ่ม bg-slate-100 ให้ body -> ใช้ Gradient */}
+      <body
+        className={`${prompt.className} font-sans antialiased min-h-screen`}
+        style={{
+          background: `linear-gradient(to bottom, var(--bg-start, #f8fafc), var(--bg-end, #f1f5f9))`,
+          backgroundAttachment: "fixed",
+        }}
+      >
         <div className="flex flex-col md:flex-row min-h-screen">
           <GlobalSettingsLoader />
           <MobileNav />

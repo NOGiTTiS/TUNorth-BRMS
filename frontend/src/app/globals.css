@@ -8,10 +8,10 @@
   --font-sans: var(--font-prompt), ui-sans-serif, system-ui, sans-serif;
 
   /* --- สีชมพูเตรียมอุดมฯ (Custom Colors) --- */
-  --color-tu-pink: #D81B60;
-  --color-tu-pink-hover: #AD1457;
-  --color-tu-pink-light: #F48FB1;
-  
+  --color-tu-pink: var(--tu-pink);
+  --color-tu-pink-hover: var(--tu-pink-hover);
+  --color-tu-pink-light: var(--tu-pink-light);
+
   /* --- Shadcn UI Colors (Standard) --- */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -52,6 +52,14 @@
 }
 
 :root {
+  /* Default Theme Colors */
+  --tu-pink: #D81B60;
+  --tu-pink-hover: #AD1457;
+  --tu-pink-light: #F48FB1;
+
+  --bg-start: #f8fafc;
+  --bg-end: #f1f5f9;
+
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
   --card: 0 0% 100%;

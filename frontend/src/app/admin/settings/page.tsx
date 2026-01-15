@@ -174,21 +174,23 @@ export default function AdminSettingsPage() {
         );
       case "color":
         return (
-          <div className="flex gap-3 items-center">
-            <input
-              type="color"
-              value={setting.setting_value}
-              onChange={(e) =>
-                handleValueChange(setting.setting_name, e.target.value)
-              }
-              className="h-10 w-20 rounded cursor-pointer border-0"
-            />
+          <div className="flex gap-4 items-center">
+            <div className="relative">
+              <input
+                type="color"
+                value={setting.setting_value}
+                onChange={(e) =>
+                  handleValueChange(setting.setting_name, e.target.value)
+                }
+                className="h-12 w-20 rounded-xl cursor-pointer border border-gray-200 p-1 bg-white shadow-sm transition-all hover:border-tu-pink focus:ring-2 focus:ring-tu-pink outline-none"
+              />
+            </div>
             <Input
               value={setting.setting_value}
               onChange={(e) =>
                 handleValueChange(setting.setting_name, e.target.value)
               }
-              className="w-32 rounded-xl"
+              className="w-full max-w-[150px] p-3 border border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-tu-pink focus-visible:border-tu-pink focus-visible:ring-offset-0 shadow-sm transition-all font-mono text-sm uppercase"
             />
           </div>
         );
@@ -251,7 +253,7 @@ export default function AdminSettingsPage() {
             onChange={(e) =>
               handleValueChange(setting.setting_name, e.target.value)
             }
-            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-tu-pink outline-none transition-all placeholder-gray-300 bg-white"
+            className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-tu-pink focus:border-tu-pink transition-all placeholder-gray-300 bg-white"
           >
             <option value="pending">รออนุมัติ (Pending)</option>
             <option value="approved">อนุมัติอัตโนมัติ (Approved)</option>
@@ -265,7 +267,7 @@ export default function AdminSettingsPage() {
             onChange={(e) =>
               handleValueChange(setting.setting_name, e.target.value)
             }
-            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-tu-pink outline-none transition-all placeholder-gray-300 shadow-sm"
+            className="w-full p-3 border border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-tu-pink focus-visible:border-tu-pink focus-visible:ring-offset-0 shadow-sm transition-all"
           />
         );
     }
