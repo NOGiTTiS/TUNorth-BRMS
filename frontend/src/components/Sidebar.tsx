@@ -236,7 +236,7 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
 
       {/* Footer */}
       <div className="p-4 text-[10px] text-center text-slate-600 border-t border-slate-800">
-        © 2026 Triam Udom Suksa
+        {get("copyright_text", "© 2026 TU-North")}
       </div>
     </aside>
   );
