@@ -9,6 +9,7 @@ import {
   Settings,
   ListTodo,
   DoorOpen,
+  Box,
 } from "lucide-react"; // เพิ่ม LogOut icon
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore"; // import store
@@ -43,7 +44,8 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
     if (user?.role === "admin") {
       menuItems.push(
         { name: "ผู้ดูแลระบบ", href: "/admin/dashboard", icon: Settings },
-        { name: "จัดการห้องประชุม", href: "/admin/rooms", icon: DoorOpen } // เพิ่มบรรทัดนี้
+        { name: "จัดการห้องประชุม", href: "/admin/rooms", icon: DoorOpen }, // เพิ่มบรรทัดนี้
+        { name: 'จัดการอุปกรณ์', href: '/admin/resources', icon: Box }
       );
     }
   }

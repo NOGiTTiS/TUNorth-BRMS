@@ -87,6 +87,7 @@ func (h *BookingHandler) CreateBooking(c *fiber.Ctx) error {
 		StartTime:   startTime,
 		EndTime:     endTime,
 		Note:        c.FormValue("note"),
+		ResourceText: c.FormValue("resource_text"),
 		Status:      "pending",
 	}
 	

@@ -189,7 +189,7 @@ export default function AdminRoomsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px]">ID</TableHead>
+                <TableHead className="w-12.5">ID</TableHead>
                 <TableHead>สี</TableHead>
                 <TableHead>ชื่อห้อง</TableHead>
                 <TableHead>ความจุ</TableHead>

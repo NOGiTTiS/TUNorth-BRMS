@@ -12,7 +12,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Booking } from "@/types/booking";
-import { MapPin, Phone, Users, Clock, User, Image as ImageIcon } from "lucide-react";
+import {
+  MapPin,
+  Phone,
+  Users,
+  Clock,
+  User,
+  Image as ImageIcon,
+} from "lucide-react";
 
 interface BookingDetailModalProps {
   booking: Booking | null;
@@ -67,20 +74,18 @@ export default function BookingDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      {/* 3. เพิ่ม bg-white เพื่อให้พื้นหลังทึบแน่นอน */}
-      <DialogContent className="sm:max-w-125 font-sans bg-white">
+      {/* 1. แก้บรรทัดนี้: เพิ่ม max-h-[90vh] และ flex flex-col */}
+      <DialogContent className="sm:max-w-125 font-sans bg-white max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center border-b pb-4 text-slate-900">
             {booking.subject}
           </DialogTitle>
-
-          {/* 2. เพิ่ม DialogDescription เพื่อแก้ Warning (ใส่ข้อความทั่วๆ ไป หรือซ่อนไว้ก็ได้) */}
           <DialogDescription className="text-center text-slate-500 text-sm">
             รายละเอียดข้อมูลการขอใช้ห้องประชุม
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        <div className="space-y-4 py-2 overflow-y-auto px-1">
           <div className="grid grid-cols-3 gap-2 text-sm">
             <div className="font-bold text-slate-700">ห้องประชุม:</div>
             <div className="col-span-2 text-slate-900 flex items-center gap-2">
@@ -140,6 +145,14 @@ export default function BookingDetailModal({
 
           <hr className="border-gray-100 my-2" />
 
+          {/* เพิ่มส่วนแสดงอุปกรณ์ แยกออกมา */}
+          <div className="grid grid-cols-3 gap-2 text-sm">
+            <div className="font-bold text-slate-700">อุปกรณ์ที่ต้องการ:</div>
+            <div className="col-span-2 text-slate-900">
+              {booking.resource_text || "-"}
+            </div>
+          </div>
+
           <div className="grid grid-cols-3 gap-2 text-sm">
             <div className="font-bold text-slate-700">หมายเหตุ:</div>
             <div className="col-span-2 text-slate-900">
@@ -180,7 +193,7 @@ export default function BookingDetailModal({
           </div>
         </div>
 
-        <DialogFooter className="sm:justify-center mt-4">
+        <DialogFooter className="sm:justify-center mt-4 pt-2 border-t">
           <Button
             type="button"
             variant="secondary"

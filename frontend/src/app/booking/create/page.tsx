@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { Room } from "@/types/room";
+import { Resource } from "@/types/resource";
 import {
   Card,
   CardContent,
@@ -31,6 +32,8 @@ export default function CreateBookingPage() {
   const { user, token, isAuthenticated } = useAuthStore();
 
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [resourceOptions, setResourceOptions] = useState<Resource[]>([]);
+
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
 
@@ -50,20 +53,11 @@ export default function CreateBookingPage() {
     attendees: "",
     note: "",
 
-    resources: [] as string[],
+    resources: [] as string[], // เก็บ ID ของ resource
 
     // เก็บไฟล์รูปภาพ
     layout_image: null as File | null,
   });
-
-  const resourceOptions = [
-    { id: "computer", label: "คอมพิวเตอร์" },
-    { id: "projector", label: "โปรเจคเตอร์" },
-    { id: "sound", label: "ระบบเครื่องเสียง" },
-    { id: "record", label: "บันทึกภาพ" },
-    { id: "place", label: "จัดสถานที่" },
-    { id: "snack", label: "จัดของว่าง" },
-  ];
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -71,21 +65,29 @@ export default function CreateBookingPage() {
       return;
     }
 
-    const fetchRooms = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/rooms");
-        if (res.ok) {
-          const data = await res.json();
-          setRooms(data);
+        // Fetch Rooms
+        const roomsRes = await fetch("http://localhost:8080/api/rooms");
+        if (roomsRes.ok) {
+          const roomsData = await roomsRes.json();
+          setRooms(roomsData);
+        }
+
+        // Fetch Resources
+        const resRes = await fetch("http://localhost:8080/api/resources");
+        if (resRes.ok) {
+          const resData = await resRes.json();
+          setResourceOptions(resData);
         }
       } catch (error) {
-        console.error("Failed to fetch rooms");
+        console.error("Failed to fetch data");
       } finally {
         setPageLoading(false);
       }
     };
 
-    fetchRooms();
+    fetchData();
   }, [isAuthenticated, router]);
 
   const handleChange = (
@@ -113,7 +115,6 @@ export default function CreateBookingPage() {
     }
   };
 
-  // จัดการไฟล์เมื่อมีการเลือก
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFormData((prev) => ({ ...prev, layout_image: e.target.files![0] }));
@@ -124,7 +125,7 @@ export default function CreateBookingPage() {
     e.preventDefault();
     setLoading(true);
 
-    // 1. รวมวันที่และเวลา
+    // 1. ตรวจสอบข้อมูลวันที่
     if (
       !formData.start_date ||
       !formData.start_time ||
@@ -152,7 +153,7 @@ export default function CreateBookingPage() {
     }
 
     try {
-      // 2. ใช้ FormData แทน JSON เพื่อรองรับ File Upload
+      // 2. ใช้ FormData
       const formDataToSend = new FormData();
 
       formDataToSend.append("user_id", user?.user_id.toString() || "");
@@ -165,18 +166,25 @@ export default function CreateBookingPage() {
       formDataToSend.append("end_time", endDateTime.toISOString());
       formDataToSend.append("status", "pending");
 
-      // จัดการ Note รวมกับ Resources (ตาม MVP)
-      let finalNote = formData.note;
+      // --- จุดที่แก้ไข: แยก Resource Text กับ Note ---
+
+      // 1. จัดการรายชื่ออุปกรณ์ (Resource Text)
       if (formData.resources.length > 0) {
         const selectedResourceLabels = formData.resources
-          .map((r) => resourceOptions.find((o) => o.id === r)?.label)
+          .map((r) => {
+            const found = resourceOptions.find((o) => o.id.toString() === r);
+            return found ? found.resource_name : null;
+          })
           .filter(Boolean)
           .join(", ");
-        if (selectedResourceLabels) {
-          finalNote += `\n[อุปกรณ์ที่ขอ: ${selectedResourceLabels}]`;
-        }
+
+        formDataToSend.append("resource_text", selectedResourceLabels);
+      } else {
+        formDataToSend.append("resource_text", "-");
       }
-      formDataToSend.append("note", finalNote);
+
+      // 2. จัดการหมายเหตุ (Note) ส่งไปเพียวๆ ไม่ต้องเอาอุปกรณ์มาต่อท้ายแล้ว
+      formDataToSend.append("note", formData.note);
 
       // แนบไฟล์รูปภาพ (ถ้ามี)
       if (formData.layout_image) {
@@ -187,8 +195,6 @@ export default function CreateBookingPage() {
       const res = await fetch("http://localhost:8080/api/bookings", {
         method: "POST",
         headers: {
-          // สำคัญ: ห้ามใส่ 'Content-Type': 'application/json' เด็ดขาด!
-          // Browser จะจัดการ Boundary ของ Multipart ให้เอง
           Authorization: `Bearer ${token}`,
         },
         body: formDataToSend,
@@ -250,7 +256,7 @@ export default function CreateBookingPage() {
                   >
                     <SelectValue placeholder="-- กรุณาเลือกห้อง --" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white z-[9999]">
+                  <SelectContent className="bg-white z-9999">
                     {rooms.map((room) => (
                       <SelectItem
                         key={room.id}
@@ -279,7 +285,6 @@ export default function CreateBookingPage() {
 
             {/* แถว 2: วันเวลาเริ่ม - วันเวลาสิ้นสุด */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* เวลาเริ่ม */}
               <div className="space-y-2">
                 <Label className="font-bold">วัน-เวลา เริ่ม</Label>
                 <div className="flex gap-2">
@@ -301,8 +306,6 @@ export default function CreateBookingPage() {
                   />
                 </div>
               </div>
-
-              {/* เวลาสิ้นสุด */}
               <div className="space-y-2">
                 <Label className="font-bold">วัน-เวลา สิ้นสุด</Label>
                 <div className="flex gap-2">
@@ -365,30 +368,37 @@ export default function CreateBookingPage() {
               </div>
             </div>
 
-            {/* แถว 4: อุปกรณ์ที่ต้องการ */}
+            {/* แถว 4: อุปกรณ์ที่ต้องการ (Dynamic from DB) */}
             <div className="space-y-3">
               <Label className="font-bold">อุปกรณ์ที่ต้องการ</Label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {resourceOptions.map((item) => (
-                  <div key={item.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={item.id}
-                      onCheckedChange={(checked) =>
-                        handleResourceChange(checked as boolean, item.id)
-                      }
-                    />
-                    <label
-                      htmlFor={item.id}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-slate-600"
-                    >
-                      {item.label}
-                    </label>
-                  </div>
-                ))}
-              </div>
+              {resourceOptions.length === 0 ? (
+                <p className="text-sm text-slate-400">- ไม่มีข้อมูลอุปกรณ์ -</p>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {resourceOptions.map((item) => (
+                    <div key={item.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={item.id.toString()}
+                        onCheckedChange={(checked) =>
+                          handleResourceChange(
+                            checked as boolean,
+                            item.id.toString()
+                          )
+                        }
+                      />
+                      <label
+                        htmlFor={item.id.toString()}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-slate-600 cursor-pointer"
+                      >
+                        {item.resource_name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* แถว 5: รูปแบบการจัดห้อง (Custom File Input) */}
+            {/* แถว 5: รูปแบบการจัดห้อง */}
             <div className="space-y-2">
               <Label className="font-bold">รูปแบบการจัดห้อง (ถ้ามี)</Label>
               <div className="flex items-center gap-3">
@@ -437,7 +447,6 @@ export default function CreateBookingPage() {
                 ** หากเป็นการจองในช่วงวันหยุด กรุณาประสานเจ้าหน้าที่
                 ที่สามารถมาปฏิบัติงานได้ ด้วยตนเอง **
               </p>
-
               <Button
                 type="submit"
                 className="bg-tu-pink hover:bg-tu-pink-hover text-white text-base px-8 py-2 h-auto"

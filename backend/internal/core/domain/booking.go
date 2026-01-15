@@ -9,18 +9,21 @@ import (
 type Booking struct {
 	ID             uint           `gorm:"primaryKey" json:"id"`
 	UserID         uint           `gorm:"not null" json:"user_id"`
-	User           User           `gorm:"foreignKey:UserID" json:"user"` // Relation ไปหา User
+	User           User           `gorm:"foreignKey:UserID" json:"user"`
 	RoomID         uint           `gorm:"not null" json:"room_id"`
-	Room           Room           `gorm:"foreignKey:RoomID" json:"room"` // Relation ไปหา Room
+	Room           Room           `gorm:"foreignKey:RoomID" json:"room"`
 	Subject        string         `gorm:"not null" json:"subject"`
 	Department     string         `json:"department"`
 	Phone          string         `json:"phone"`
 	Attendees      int            `json:"attendees"`
 	StartTime      time.Time      `gorm:"not null" json:"start_time"`
 	EndTime        time.Time      `gorm:"not null" json:"end_time"`
+	
 	Note           string         `json:"note"`
+	ResourceText   string         `json:"resource_text"` // เพิ่มบรรทัดนี้ (เก็บรายชื่ออุปกรณ์)
+	
 	LayoutImage    string         `json:"layout_image"`
-	Status         string         `gorm:"default:'pending'" json:"status"` // pending, approved, rejected, cancelled
+	Status         string         `gorm:"default:'pending'" json:"status"`
 	ApproverID     *uint          `json:"approver_id"`
 	Approver       *User          `gorm:"foreignKey:ApproverID" json:"approver"`
 	RejectReason   string         `json:"reject_reason"`

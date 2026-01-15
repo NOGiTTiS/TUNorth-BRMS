@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 	"os"
+	"tunorth-brms-backend/internal/core/services"
 	"tunorth-brms-backend/internal/adapters/handlers/http"
 	"tunorth-brms-backend/internal/adapters/storage"
-	"tunorth-brms-backend/internal/core/services"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -44,6 +44,11 @@ func main() {
 	authService := services.NewAuthService(userRepo)
 	authHandler := http.NewAuthHandler(authService)
 
+	// Resource
+	resRepo := storage.NewResourceRepository(database.DB)
+    resService := services.NewResourceService(resRepo)
+    resHandler := http.NewResourceHandler(resService)
+
 	// 4. Setup Fiber App
 	app := fiber.New(fiber.Config{
 		// เพิ่มขีดจำกัดขนาดไฟล์เป็น 20 MB (หรือตามต้องการ)
@@ -77,6 +82,13 @@ func main() {
 	// Auth Routes (เพิ่มใหม่)
 	api.Post("/register", authHandler.Register)
 	api.Post("/login", authHandler.Login)
+
+	// Resource Routes
+    resources := api.Group("/resources")
+    resources.Get("/", resHandler.GetAllResources)
+    resources.Post("/", resHandler.CreateResource)
+    resources.Put("/:id", resHandler.UpdateResource)
+    resources.Delete("/:id", resHandler.DeleteResource)
 
 	// Test Route
 	app.Get("/", func(c *fiber.Ctx) error {
