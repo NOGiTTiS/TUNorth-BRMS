@@ -52,6 +52,14 @@ func (r *bookingRepository) CountOverlapping(roomID uint, start, end time.Time) 
 	return count, err
 }
 
+func (r *bookingRepository) CountOverlappingExcludingID(roomID uint, start, end time.Time, excludeID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&domain.Booking{}).
+		Where("room_id = ? AND status != 'cancelled' AND start_time < ? AND end_time > ? AND id != ?", roomID, end, start, excludeID).
+		Count(&count).Error
+	return count, err
+}
+
 func (r *bookingRepository) Update(booking *domain.Booking) error {
 	return r.db.Save(booking).Error
 }

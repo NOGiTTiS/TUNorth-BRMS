@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 	"os"
-	"tunorth-brms-backend/internal/core/services"
 	"tunorth-brms-backend/internal/adapters/handlers/http"
 	"tunorth-brms-backend/internal/adapters/storage"
+	"tunorth-brms-backend/internal/core/services"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -82,6 +82,8 @@ func main() {
 	bookings.Get("/", bookingHandler.GetBookings) // รองรับ ?start=...&end=...
 	bookings.Post("/", bookingHandler.CreateBooking)
 	bookings.Patch("/:id/status", bookingHandler.UpdateStatus)
+	bookings.Put("/:id", bookingHandler.UpdateBooking)
+	bookings.Delete("/:id", bookingHandler.DeleteBooking)
 
 	// Auth Routes 
 	api.Post("/register", authHandler.Register)

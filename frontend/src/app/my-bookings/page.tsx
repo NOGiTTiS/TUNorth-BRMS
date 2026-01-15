@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CalendarClock } from "lucide-react";
+import { ArrowLeft, CalendarClock, Trash2 } from "lucide-react";
 
 export default function MyBookingsPage() {
   const router = useRouter();
@@ -102,6 +102,7 @@ export default function MyBookingsPage() {
                 <TableHead className="text-slate-500 font-medium">
                   สถานะ
                 </TableHead>
+                <TableHead className="text-slate-500 font-medium w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -146,6 +147,42 @@ export default function MyBookingsPage() {
                       <Badge variant="outline" className="text-slate-500">
                         ยกเลิก
                       </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {booking.status === "pending" && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full h-8 w-8"
+                        onClick={async () => {
+                          if (!confirm("คุณต้องการยกเลิกการจองนี้ใช่หรือไม่?"))
+                            return;
+                          try {
+                            const res = await fetch(
+                              `http://localhost:8080/api/bookings/${booking.id}`,
+                              {
+                                method: "DELETE",
+                                headers: { Authorization: `Bearer ${token}` },
+                              }
+                            );
+                            if (res.ok) {
+                              // setBookings(prev => prev.filter(b => b.id !== booking.id)); // If hard delete
+                              // If soft delete/cancel API changes status, reload.
+                              // Assuming DELETE removes it based on previous conversation context.
+                              setBookings((prev) =>
+                                prev.filter((b) => b.id !== booking.id)
+                              );
+                              // Optional: toast success
+                            }
+                          } catch (e) {
+                            console.error(e);
+                          }
+                        }}
+                        title="ยกเลิกการจอง"
+                      >
+                        <Trash2 size={16} />
+                      </Button>
                     )}
                   </TableCell>
                 </TableRow>

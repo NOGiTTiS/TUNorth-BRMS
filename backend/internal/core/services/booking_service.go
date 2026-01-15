@@ -87,3 +87,46 @@ func (s *bookingService) UpdateBookingStatus(id uint, status string, approverID 
 	// 3. บันทึก
 	return s.repo.Update(booking)
 }
+
+func (s *bookingService) UpdateBooking(id uint, updatedBooking *domain.Booking) error {
+    existing, err := s.repo.GetByID(id)
+    if err != nil {
+        return err
+    }
+    
+    // Update fields
+    existing.Subject = updatedBooking.Subject
+    existing.RoomID = updatedBooking.RoomID
+    existing.StartTime = updatedBooking.StartTime
+    existing.EndTime = updatedBooking.EndTime
+    existing.Note = updatedBooking.Note
+    // Add other fields if necessary
+    
+    // Validate Time again?
+	if existing.StartTime.After(existing.EndTime) || existing.StartTime.Equal(existing.EndTime) {
+		return errors.New("start time must be before end time")
+	}
+
+    // Check conflict? If room or time changed.
+    // For simplicity, let's assume conflict check is skipped or basic re-check
+    // s.repo.CountOverlapping(...)
+    count, err := s.repo.CountOverlappingExcludingID(existing.RoomID, existing.StartTime, existing.EndTime, id)
+    if err != nil {
+        return err
+    }
+    if count > 0 {
+        return errors.New("room is not available at this time")
+    }
+    
+    // IMPORTANT: Clear associations to prevent Gorm from trying to update/create them
+    // or causing issues with the foreign key update
+    existing.Room = domain.Room{}
+    existing.User = domain.User{}
+    existing.Approver = nil
+
+    return s.repo.Update(existing)
+}
+
+func (s *bookingService) DeleteBooking(id uint) error {
+    return s.repo.Delete(id)
+}

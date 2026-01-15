@@ -15,28 +15,33 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Check, X, Eye, CalendarCheck } from "lucide-react";
+import { Check, X, Eye, CalendarCheck, Pencil, Trash2 } from "lucide-react";
 import BookingDetailModal from "@/components/BookingDetailModal";
+import BookingEditModal from "@/components/BookingEditModal";
 
 export default function ManageBookingsPage() {
   const router = useRouter();
-  const { user, token, isAuthenticated } = useAuthStore();
+  const { user, token, isAuthenticated, isInitialized } = useAuthStore();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
   // State สำหรับ Modal
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchBookings = async () => {
     try {
       const res = await fetch("http://localhost:8080/api/bookings", {
+        cache: "no-store",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       if (res.ok) {
         const data = await res.json();
+        console.log("Fetched Bookings:", data); // Debug Log
         const sorted = data.sort((a: Booking, b: Booking) => b.id - a.id);
         setBookings(sorted);
       }
@@ -48,12 +53,13 @@ export default function ManageBookingsPage() {
   };
 
   useEffect(() => {
+    if (!isInitialized) return;
     if (!isAuthenticated) {
       router.push("/login");
       return;
     }
     fetchBookings();
-  }, [isAuthenticated, router, token]);
+  }, [isAuthenticated, isInitialized, router, token]);
 
   const handleUpdateStatus = async (id: number, newStatus: string) => {
     try {
@@ -85,6 +91,29 @@ export default function ManageBookingsPage() {
   const handleViewDetail = (booking: Booking) => {
     setSelectedBooking(booking);
     setIsModalOpen(true);
+  };
+
+  const handleEdit = (booking: Booking) => {
+    setEditingBooking(booking);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("คุณต้องการลบการจองนี้อย่างถาวรหรือไม่?")) return;
+    try {
+      const res = await fetch(`http://localhost:8080/api/bookings/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        toast.success("ลบการจองเรียบร้อยแล้ว");
+        fetchBookings();
+      } else {
+        throw new Error("Delete failed");
+      }
+    } catch (error) {
+      toast.error("ลบไม่สำเร็จ");
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -222,6 +251,24 @@ export default function ManageBookingsPage() {
                           </Button>
                         </>
                       )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 w-8 p-0 rounded-full border-slate-200 hover:bg-slate-50"
+                        onClick={() => handleEdit(booking)}
+                        title="แก้ไข"
+                      >
+                        <Pencil size={16} className="text-slate-500" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 w-8 p-0 rounded-full border-slate-200 hover:bg-slate-50"
+                        onClick={() => handleDelete(booking.id)}
+                        title="ลบ"
+                      >
+                        <Trash2 size={16} className="text-red-500" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -247,6 +294,14 @@ export default function ManageBookingsPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         booking={selectedBooking}
+      />
+
+      {/* Edit Modal */}
+      <BookingEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        booking={editingBooking}
+        onSuccess={fetchBookings}
       />
     </div>
   );

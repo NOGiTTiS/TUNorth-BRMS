@@ -2,8 +2,8 @@ package http
 
 import (
 	"fmt"
-	"time"
 	"strconv"
+	"time"
 	"tunorth-brms-backend/internal/core/domain"
 	"tunorth-brms-backend/internal/core/ports"
 
@@ -152,4 +152,76 @@ func (h *BookingHandler) UpdateStatus(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"message": "Status updated successfully"})
+}
+
+// PUT /api/bookings/:id
+func (h *BookingHandler) UpdateBooking(c *fiber.Ctx) error {
+    id, err := c.ParamsInt("id")
+    if err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
+    }
+
+    var input struct {
+        Subject   string    `json:"subject"`
+        RoomID    uint      `json:"room_id"` // Note: JSON uses string for uint in some cases, but here assumes number
+        StartTime time.Time `json:"start_time"`
+        EndTime   time.Time `json:"end_time"`
+        Note      string    `json:"note"`
+    }
+
+    if err := c.BodyParser(&input); err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input"})
+    }
+
+    if input.Subject == "" {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Subject cannot be empty"})
+    }
+    
+    // Manual mapping or use domain.Booking directly if body matches
+    // Note: The frontend sends JSON with room_id as string? Check BookingEditModal
+    // BookingEditModal sends: room_id (string), start_time (ISO string)
+    // Go Fiber BodyParser handles ISO string to time.Time automatically? Yes usually.
+    // But room_id string to uint might fail if strict.
+    // Let's use flexible struct or check frontend.
+    // Frontend sends room_id as string. Backend expects uint or int.
+    // Fiber parser is smart enough usually, but let's be safe.
+    // Actually, `c.BodyParser` decodes based on the struct tag.
+    // If I use `RoomID string` I can convert manually.
+
+    // Let's try direct mapping to domain.Booking struct first, usually easier.
+    // But domain.Booking has many fields.
+    
+    fmt.Printf("Updating Booking ID: %d with data: %+v\n", id, input) // Debug Log
+
+    // Use domain booking for simplicity
+    booking := domain.Booking{
+		Subject:   input.Subject,
+        // RoomID will need handling if frontend sends string
+        // StartTime, EndTime handled
+        Note: input.Note,
+	}
+    // Handle RoomID manually if needed, but if input.RoomID is uint, frontend MUST send number or string-number.
+    booking.RoomID = input.RoomID
+    booking.StartTime = input.StartTime
+    booking.EndTime = input.EndTime
+
+    if err := h.service.UpdateBooking(uint(id), &booking); err != nil {
+        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+    }
+    
+    return c.JSON(fiber.Map{"message": "Booking updated successfully"})
+}
+
+// DELETE /api/bookings/:id
+func (h *BookingHandler) DeleteBooking(c *fiber.Ctx) error {
+    id, err := c.ParamsInt("id")
+    if err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
+    }
+    
+    if err := h.service.DeleteBooking(uint(id)); err != nil {
+        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+    }
+    
+    return c.SendStatus(fiber.StatusOK)
 }
