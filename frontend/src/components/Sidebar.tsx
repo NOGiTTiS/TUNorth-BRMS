@@ -12,6 +12,7 @@ import {
   DoorOpen,
   Box,
   Users,
+  User,
   ListTodo,
   LayoutDashboard,
 } from "lucide-react";
@@ -34,6 +35,11 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
         name: "การจองของฉัน",
         href: "/my-bookings",
         icon: ListTodo,
+      },
+      {
+        name: "ข้อมูลส่วนตัว",
+        href: "/my-profile",
+        icon: User,
       },
       {
         name: "ภาพรวมระบบ", // Dashboard
@@ -83,19 +89,21 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
       {/* User Profile (ถ้ามี) */}
       {isAuthenticated && user && (
         <div className="px-6 pb-6">
-          <div className="bg-slate-800/50 rounded-lg p-3 flex items-center gap-3 border border-slate-700">
-            <div className="w-8 h-8 rounded-full bg-tu-pink flex items-center justify-center text-white font-bold text-sm">
-              {user.username.charAt(0).toUpperCase()}
+          <Link href="/my-profile" onClick={onClose}>
+            <div className="bg-slate-800/50 rounded-lg p-3 flex items-center gap-3 border border-slate-700 hover:bg-slate-800 transition-colors cursor-pointer group">
+              <div className="w-8 h-8 rounded-full bg-tu-pink flex items-center justify-center text-white font-bold text-sm group-hover:scale-105 transition-transform">
+                {user.username.charAt(0).toUpperCase()}
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-sm font-medium truncate text-slate-200 group-hover:text-white">
+                  {user.username}
+                </p>
+                <p className="text-xs text-slate-500 truncate capitalize group-hover:text-slate-400">
+                  {user.role}
+                </p>
+              </div>
             </div>
-            <div className="overflow-hidden">
-              <p className="text-sm font-medium truncate text-slate-200">
-                {user.username}
-              </p>
-              <p className="text-xs text-slate-500 truncate capitalize">
-                {user.role}
-              </p>
-            </div>
-          </div>
+          </Link>
         </div>
       )}
 

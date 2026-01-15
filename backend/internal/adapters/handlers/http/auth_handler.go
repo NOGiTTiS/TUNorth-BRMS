@@ -5,6 +5,7 @@ import (
 	"tunorth-brms-backend/internal/core/ports"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type AuthHandler struct {
@@ -74,4 +75,40 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		"message": "Login successful",
 		"token":   token,
 	})
+}
+
+// GET /api/me
+func (h *AuthHandler) GetMe(c *fiber.Ctx) error {
+	// Extract user_id from Claims (middleware should set this)
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
+
+	u, err := h.service.GetMe(userID)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
+	}
+
+    // Hide password
+    u.Password = ""
+
+	return c.JSON(u)
+}
+
+// PUT /api/me
+func (h *AuthHandler) UpdateMe(c *fiber.Ctx) error {
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
+
+	var req domain.User
+	if err := c.BodyParser(&req); err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input"})
+    }
+
+	if err := h.service.UpdateMe(userID, &req); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"message": "Profile updated successfully"})
 }

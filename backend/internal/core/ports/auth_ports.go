@@ -14,6 +14,8 @@ type UserRepository interface {
 type AuthService interface {
 	Register(user *domain.User) error
 	Login(username, password string) (string, error)
+	GetMe(userID uint) (*domain.User, error)
+	UpdateMe(userID uint, user *domain.User) error
 }
 
 // --- แก้ไขตรงนี้ครับ ---

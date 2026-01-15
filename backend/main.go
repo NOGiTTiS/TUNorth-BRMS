@@ -7,6 +7,7 @@ import (
 	"tunorth-brms-backend/internal/adapters/storage"
 	"tunorth-brms-backend/internal/core/services"
 
+	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -88,6 +89,19 @@ func main() {
 	// Auth Routes 
 	api.Post("/register", authHandler.Register)
 	api.Post("/login", authHandler.Login)
+
+	// Middleware JWT
+	// ใช้ contrib/jwt เพื่อรองรับ golang-jwt/jwt/v5
+	jwtMiddleware := jwtware.New(jwtware.Config{
+		SigningKey: jwtware.SigningKey{Key: []byte(os.Getenv("JWT_SECRET"))},
+	})
+	
+	// Protected Routes
+	api.Get("/me", jwtMiddleware, authHandler.GetMe)
+	api.Put("/me", jwtMiddleware, authHandler.UpdateMe)
+
+	// Example: Apply to other routes if needed
+	// bookings.Use(jwtMiddleware)
 
 	// User Routes
     users := api.Group("/users")

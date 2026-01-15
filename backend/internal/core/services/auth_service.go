@@ -68,3 +68,31 @@ func (s *authService) Login(username, password string) (string, error) {
 
 	return tokenString, nil
 }
+
+func (s *authService) GetMe(userID uint) (*domain.User, error) {
+	return s.userRepo.GetByID(userID)
+}
+
+func (s *authService) UpdateMe(userID uint, updates *domain.User) error {
+	user, err := s.userRepo.GetByID(userID)
+	if err != nil {
+		return err
+	}
+
+	// Update fields
+	user.FullName = updates.FullName
+	user.Email = updates.Email
+	user.Tel = updates.Tel
+    user.Department = updates.Department
+
+	// If password provided, hash it
+	if updates.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(updates.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return err
+		}
+		user.Password = string(hashedPassword)
+	}
+
+	return s.userRepo.Update(user)
+}
