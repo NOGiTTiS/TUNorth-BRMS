@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
+import { useSettings } from "@/hooks/useSettings";
 import {
   CalendarDays,
   LogIn,
@@ -25,6 +26,10 @@ interface SidebarProps {
 export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { isAuthenticated, logout, user } = useAuthStore();
+  const { get } = useSettings();
+  const siteName = get("site_name", "TUNorth-BRMS");
+  const siteDesc = get("site_description", "ระบบจองห้องประชุมออนไลน์");
+  const siteLogo = get("site_logo");
 
   // กำหนดรายการเมนู
   const menuItems = [{ name: "ปฏิทิน", href: "/", icon: CalendarDays }];
@@ -58,7 +63,8 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
         }, // New Link
         { name: "จัดการผู้ใช้งาน", href: "/admin/users", icon: Users },
         { name: "จัดการห้องประชุม", href: "/admin/rooms", icon: DoorOpen },
-        { name: "จัดการอุปกรณ์", href: "/admin/resources", icon: Box }
+        { name: "จัดการอุปกรณ์", href: "/admin/resources", icon: Box },
+        { name: "ตั้งค่าระบบ", href: "/admin/settings", icon: Settings }
       );
     }
   } else {
@@ -79,11 +85,22 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
     >
       {/* Logo Section */}
       <div className="p-6 text-center">
+        {siteLogo && (
+          <div className="mb-3 flex justify-center">
+            <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-white/10 p-2">
+              <img
+                src={siteLogo}
+                alt="Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>
+          </div>
+        )}
         {/* ชื่อระบบสีชมพู */}
-        <h1 className="text-2xl font-bold tracking-wider text-tu-pink">
-          TUNorth-BRMS
+        <h1 className="text-2xl font-bold tracking-wider text-tu-pink break-words">
+          {siteName}
         </h1>
-        <p className="text-xs text-slate-400 mt-1">ระบบจองห้องประชุมออนไลน์</p>
+        <p className="text-xs text-slate-400 mt-1">{siteDesc}</p>
       </div>
 
       {/* User Profile (ถ้ามี) */}

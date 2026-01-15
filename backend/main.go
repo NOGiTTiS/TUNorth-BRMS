@@ -5,6 +5,7 @@ import (
 	"os"
 	"tunorth-brms-backend/internal/adapters/handlers/http"
 	"tunorth-brms-backend/internal/adapters/storage"
+	"tunorth-brms-backend/internal/core/domain"
 	"tunorth-brms-backend/internal/core/services"
 
 	jwtware "github.com/gofiber/contrib/jwt"
@@ -54,6 +55,15 @@ func main() {
     resService := services.NewResourceService(resRepo)
     resHandler := http.NewResourceHandler(resService)
 
+	// Settings (Admin)
+	settingRepo := storage.NewSettingRepository(database.DB)
+	settingService := services.NewSettingService(settingRepo)
+	settingHandler := http.NewSettingHandler(settingService)
+
+	// Auto-Migrate & Initialize Defaults
+	database.DB.AutoMigrate(&domain.Setting{})
+	settingService.InitializeDefaults()
+
 	// 4. Setup Fiber App
 	app := fiber.New(fiber.Config{
 		// เพิ่มขีดจำกัดขนาดไฟล์เป็น 20 MB (หรือตามต้องการ)
@@ -69,6 +79,9 @@ func main() {
 
 	// 5. Routes Definition
 	api := app.Group("/api") // จัดกลุ่ม path ขึ้นต้นด้วย /api
+
+	// Public Settings (ไม่ต้อง Login ก็ได้ จะได้โหลด Logo ได้)
+	api.Get("/settings/public", settingHandler.GetPublicSettings)
 
 	// Room Routes
 	rooms := api.Group("/rooms")
@@ -99,6 +112,11 @@ func main() {
 	// Protected Routes
 	api.Get("/me", jwtMiddleware, authHandler.GetMe)
 	api.Put("/me", jwtMiddleware, authHandler.UpdateMe)
+	
+	// Settings Protected
+	api.Get("/settings", jwtMiddleware, settingHandler.GetAllSettings)
+	api.Put("/settings", jwtMiddleware, settingHandler.UpdateSettings)
+	api.Post("/settings/upload", jwtMiddleware, settingHandler.UploadImage)
 
 	// Example: Apply to other routes if needed
 	// bookings.Use(jwtMiddleware)

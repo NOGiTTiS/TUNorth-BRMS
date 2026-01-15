@@ -15,11 +15,16 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2, LogIn } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import { useSettings } from "@/hooks/useSettings"; // Import
 import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
+  const { get } = useSettings();
+  const siteName = get("site_name", "TUNorth-BRMS");
+  const siteDesc = get("site_description", "ระบบจองห้องประชุมออนไลน์");
+  const siteLogo = get("site_logo");
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -61,12 +66,21 @@ export default function LoginPage() {
     <div className="flex items-center justify-center bg-slate-50 font-sans">
       <Card className="w-full max-w-md shadow-2xl border-none rounded-3xl overflow-hidden ">
         <div className="bg-slate-900 p-6 text-center rounded-t-3xl">
+          {siteLogo && (
+            <div className="mb-4 flex justify-center">
+              <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-white/10 p-2">
+                <img
+                  src={siteLogo}
+                  alt="Logo"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </div>
+          )}
           <h1 className="text-3xl font-bold text-tu-pink tracking-wider">
-            TUNorth-BRMS
+            {siteName}
           </h1>
-          <p className="text-slate-400 text-sm mt-2">
-            ระบบจองห้องประชุมออนไลน์
-          </p>
+          <p className="text-slate-400 text-sm mt-2">{siteDesc}</p>
         </div>
 
         <CardHeader className="text-center pb-2 pt-2">
