@@ -194,34 +194,54 @@ export default function AdminSettingsPage() {
         );
       case "image":
         return (
-          <div className="space-y-3">
-            {setting.setting_value && (
-              <div className="relative w-32 h-32 border rounded-xl overflow-hidden bg-slate-100 flex items-center justify-center">
-                <img
-                  src={setting.setting_value}
-                  alt={setting.label}
-                  className="w-full h-full object-contain"
-                />
+          <div className="space-y-4 p-6 border border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
+            <div className="flex items-center gap-6">
+              {setting.setting_value ? (
+                <div className="relative w-24 h-24 border border-gray-100 rounded-xl overflow-hidden bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <img
+                    src={setting.setting_value}
+                    alt={setting.label}
+                    className="w-full h-full object-contain p-2"
+                  />
+                </div>
+              ) : (
+                <div className="w-24 h-24 border border-dashed border-gray-300 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 text-xs text-center p-2 shrink-0">
+                  No Image
+                </div>
+              )}
+
+              <div className="flex-1 space-y-3">
+                <div className="relative">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        handleImageUpload(
+                          setting.setting_name,
+                          e.target.files[0]
+                        );
+                      }
+                    }}
+                    className="hidden" // Syle custom file button if needed, or stick to simple
+                    id={`file-${setting.setting_name}`}
+                  />
+                  <label
+                    htmlFor={`file-${setting.setting_name}`}
+                    className="inline-flex items-center px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-full hover:bg-slate-900 cursor-pointer transition-colors shadow-lg shadow-slate-900/20"
+                  >
+                    Choose File
+                  </label>
+                  <span className="ml-3 text-sm text-gray-500">
+                    No file chosen
+                  </span>
+                </div>
+
+                <p className="text-xs text-gray-400">
+                  Recommended: PNG/SVG transparent
+                </p>
               </div>
-            )}
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                if (e.target.files?.[0]) {
-                  handleImageUpload(setting.setting_name, e.target.files[0]);
-                }
-              }}
-              className="rounded-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-tu-pink/10 file:text-tu-pink hover:file:bg-tu-pink/20"
-            />
-            <Input
-              value={setting.setting_value}
-              onChange={(e) =>
-                handleValueChange(setting.setting_name, e.target.value)
-              }
-              placeholder="Image URL"
-              className="rounded-xl text-xs text-slate-400"
-            />
+            </div>
           </div>
         );
       case "select":
@@ -231,7 +251,7 @@ export default function AdminSettingsPage() {
             onChange={(e) =>
               handleValueChange(setting.setting_name, e.target.value)
             }
-            className="w-full p-2 border border-slate-200 rounded-xl bg-white"
+            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-tu-pink outline-none transition-all placeholder-gray-300 bg-white"
           >
             <option value="pending">รออนุมัติ (Pending)</option>
             <option value="approved">อนุมัติอัตโนมัติ (Approved)</option>
@@ -245,7 +265,7 @@ export default function AdminSettingsPage() {
             onChange={(e) =>
               handleValueChange(setting.setting_name, e.target.value)
             }
-            className="rounded-xl"
+            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-tu-pink outline-none transition-all placeholder-gray-300 shadow-sm"
           />
         );
     }
