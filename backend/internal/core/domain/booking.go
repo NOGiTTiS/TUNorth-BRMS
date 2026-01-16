@@ -2,7 +2,8 @@ package domain
 
 import (
 	"time"
-	// ลบบรรทัด "gorm.io/gorm" ทิ้ง หรือ comment ไว้แบบนี้
+
+	"gorm.io/gorm"
 )
 
 // Booking struct แทนตาราง bookings
@@ -30,6 +31,7 @@ type Booking struct {
 	BookingResources []BookingResource `gorm:"foreignKey:BookingID" json:"booking_resources"`
 	CreatedAt      time.Time      `json:"created_at"`
 	UpdatedAt      time.Time      `json:"updated_at"`
+	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 // BookingResource ตารางกลางสำหรับ Many-to-Many

@@ -18,6 +18,7 @@ import {
   LayoutDashboard,
   Shield,
   ChevronDown,
+  BarChart3,
 } from "lucide-react";
 
 import { useState } from "react"; // needed for state
@@ -58,6 +59,11 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
         icon: Box,
       },
       {
+        name: "ภาพรวมระบบ", // Dashboard
+        href: "/admin/dashboard",
+        icon: LayoutDashboard,
+      },
+      {
         name: "การจองของฉัน",
         href: "/my-bookings",
         icon: ListTodo,
@@ -67,11 +73,6 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
         href: "/my-profile",
         icon: User,
       },
-      {
-        name: "ภาพรวมระบบ", // Dashboard
-        href: "/admin/dashboard",
-        icon: LayoutDashboard,
-      }
     );
 
     if (user?.role === "admin") {
@@ -89,6 +90,7 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
           { name: "จัดการห้องประชุม", href: "/admin/rooms", icon: DoorOpen },
           { name: "จัดการอุปกรณ์", href: "/admin/resources", icon: Box },
           { name: "ตั้งค่าระบบ", href: "/admin/settings", icon: Settings },
+          { name: "รายงาน", href: "/admin/report", icon: BarChart3 },
         ],
       });
     }

@@ -63,12 +63,17 @@ func main() {
 	// Resource
 	resRepo := storage.NewResourceRepository(database.DB)
     resService := services.NewResourceService(resRepo)
-    resHandler := http.NewResourceHandler(resService)
+	resHandler := http.NewResourceHandler(resService)
+
+	// Report Module
+	reportRepo := storage.NewReportRepository(database.DB)
+	reportService := services.NewReportService(reportRepo)
+	reportHandler := http.NewReportHandler(reportService)
 
 
 
 	// Auto-Migrate & Initialize Defaults
-	database.DB.AutoMigrate(&domain.Setting{})
+	database.DB.AutoMigrate(&domain.Setting{}, &domain.Booking{})
 	settingService.InitializeDefaults()
 
 	// 4. Setup Fiber App
@@ -141,6 +146,9 @@ func main() {
     resources.Post("/", resHandler.CreateResource)
     resources.Put("/:id", resHandler.UpdateResource)
     resources.Delete("/:id", resHandler.DeleteResource)
+
+	// Report Routes
+	api.Get("/reports/dashboard", reportHandler.GetDashboardStats)
 
 	// Test Route
 	app.Get("/", func(c *fiber.Ctx) error {

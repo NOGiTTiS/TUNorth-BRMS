@@ -71,10 +71,16 @@ export default function AdminDashboard() {
       const currentYear = new Date().getFullYear();
       const months = new Array(12).fill(0);
 
+      console.log("Current Year:", currentYear);
+      console.log("Bookings:", bookings);
+
       bookings.forEach((b: any) => {
-        const d = new Date(b.start_time);
-        if (d.getFullYear() === currentYear) {
-          months[d.getMonth()]++;
+        const dateStr = b.start_time || b.StartTime;
+        if (dateStr) {
+          const d = new Date(dateStr);
+          if (!isNaN(d.getTime()) && d.getFullYear() === currentYear) {
+            months[d.getMonth()]++;
+          }
         }
       });
 
@@ -111,30 +117,30 @@ export default function AdminDashboard() {
     const maxVal = Math.max(...data, 10); // Minimum scale of 10
 
     return (
-      <div className="w-full h-80 flex items-end gap-2 md:gap-4 pt-8 pb-6 px-4">
+      <div className="w-full h-80 flex items-end gap-2 md:gap-4 pt-8 pb-6 px-4 bg-slate-50">
         {data.slice(0, 12).map((val, idx) => {
-          // Show all 12 months or slice if needed
-          // Only show first 6 months for cleaner view on mobile if needed, but 12 fits on desktop
-          // Let's assume standard layout
           const heightPercent = (val / maxVal) * 100;
           return (
             <div
               key={idx}
-              className="flex-1 flex flex-col items-center group relative"
+              className="flex-1 flex flex-col items-center group relative h-full justify-end"
             >
               {/* Tooltip */}
-              <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs px-2 py-1 rounded pointer-events-none mb-2">
+              <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs px-2 py-1 rounded pointer-events-none mb-2 z-10 w-max">
                 {val} รายการ
               </div>
 
               {/* Bar */}
               <div
-                className="w-full max-w-[40px] bg-tu-pink/80 hover:bg-tu-pink rounded-t-sm transition-all duration-500 ease-out"
-                style={{ height: `${heightPercent}%` }}
+                className="w-full max-w-[40px] rounded-t-sm transition-all duration-500 ease-out opacity-80 hover:opacity-100"
+                style={{
+                  height: `${heightPercent}%`,
+                  backgroundColor: "#D81B60", // Force Hex Color
+                }}
               ></div>
 
               {/* Label */}
-              <span className="text-[10px] md:text-xs text-slate-400 mt-2 truncate max-w-full text-center">
+              <span className="text-[10px] md:text-xs text-slate-400 mt-2 truncate max-w-full text-center h-4">
                 {monthNames[idx]}
               </span>
             </div>
@@ -185,7 +191,7 @@ export default function AdminDashboard() {
       {/* 3. Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Card 1: Total Bookings */}
-        <Card className="rounded-2xl border-none shadow-sm shadow-slate-200">
+        <Card className="rounded-2xl border-none bg-slate-50 shadow-sm shadow-slate-200">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-slate-500">
               การจองทั้งหมด
@@ -202,7 +208,7 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Card 2: Approved */}
-        <Card className="rounded-2xl border-none shadow-sm shadow-slate-200">
+        <Card className="rounded-2xl border-none bg-slate-50 shadow-sm shadow-slate-200">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-slate-500">
               การจองที่อนุมัติ
@@ -220,7 +226,7 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Card 3: Rooms */}
-        <Card className="rounded-2xl border-none shadow-sm shadow-slate-200">
+        <Card className="rounded-2xl border-none bg-slate-50 shadow-sm shadow-slate-200">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-slate-500">
               ห้องทั้งหมด
@@ -237,7 +243,7 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Card 4: Users */}
-        <Card className="rounded-2xl border-none shadow-sm shadow-slate-200">
+        <Card className="rounded-2xl border-none bg-slate-50 shadow-sm shadow-slate-200">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-slate-500">
               ผู้ใช้ทั้งหมด
@@ -255,7 +261,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* 4. Chart Section */}
-      <Card className="rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+      <Card className="rounded-3xl border border-slate-100 bg-slate-50 shadow-sm overflow-hidden">
         <CardHeader className="pb-0 pt-6 px-6">
           <CardTitle className="text-lg font-bold text-slate-800">
             ยอดการจองรายเดือน (ปีปัจจุบัน)
@@ -266,6 +272,11 @@ export default function AdminDashboard() {
           <div className="relative w-full overflow-x-auto">
             <div className="min-w-[500px]">
               <BarChart data={monthlyData} />
+            </div>
+            {/* Debug Info (Hidden in prod) */}
+            <div className="text-[10px] text-slate-300 text-center mt-2">
+              Data Year: {new Date().getFullYear()} | Total in Chart:{" "}
+              {monthlyData.reduce((a, b) => a + b, 0)}
             </div>
           </div>
         </CardContent>
