@@ -150,7 +150,8 @@ export default function MyBookingsPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {booking.status === "pending" && (
+                    {(booking.status === "pending" ||
+                      booking.status === "approved") && (
                       <Button
                         variant="ghost"
                         size="icon"

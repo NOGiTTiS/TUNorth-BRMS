@@ -8,6 +8,7 @@ import (
 	"tunorth-brms-backend/internal/core/ports"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type BookingHandler struct {
@@ -213,13 +214,37 @@ func (h *BookingHandler) UpdateBooking(c *fiber.Ctx) error {
 }
 
 // DELETE /api/bookings/:id
+// DELETE /api/bookings/:id
 func (h *BookingHandler) DeleteBooking(c *fiber.Ctx) error {
     id, err := c.ParamsInt("id")
     if err != nil {
         return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
     }
-    
-    if err := h.service.DeleteBooking(uint(id)); err != nil {
+
+	// Get User ID from Token
+	// Note: Check if Locals("user") exists to avoid panic in case of middleware failure
+	userCtx := c.Locals("user")
+	if userCtx == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+	
+	userToken := userCtx.(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+	
+	// Safely retrieve user_id
+	idInterface := claims["user_id"]
+	var actorID uint
+	if idFloat, ok := idInterface.(float64); ok {
+		actorID = uint(idFloat)
+	} else {
+		// Fallback or Error
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token claims"})
+	}
+
+    if err := h.service.DeleteBooking(uint(id), actorID); err != nil {
+		if err.Error() == "unauthorized" || err.Error() == "you do not have permission to delete this booking" {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": err.Error()})
+		}
         return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
     }
     

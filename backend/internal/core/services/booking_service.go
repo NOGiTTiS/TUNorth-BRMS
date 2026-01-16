@@ -207,6 +207,31 @@ func (s *bookingService) UpdateBooking(id uint, updatedBooking *domain.Booking) 
     return s.repo.Update(existing)
 }
 
-func (s *bookingService) DeleteBooking(id uint) error {
-    return s.repo.Delete(id)
+func (s *bookingService) DeleteBooking(id uint, actorID uint) error {
+	booking, err := s.repo.GetByID(id)
+	if err != nil {
+		return err
+	}
+
+	// Determine if actor is admin
+	// Note: Ideally we pass user role or full user obj, but for now lets fetch user.
+	// Optimization: Pass isAdmin flag or fetch actor role.
+	actor, err := s.userRepo.GetByID(actorID)
+	if err != nil {
+		return errors.New("unauthorized")
+	}
+
+	// Check permission: Owner OR Admin
+	if booking.UserID != actorID && actor.Role != "admin" {
+		return errors.New("you do not have permission to delete this booking")
+	}
+
+    if err := s.repo.Delete(id); err != nil {
+		return err
+	}
+
+	// Log
+	go s.logService.LogAction(actorID, "DELETE_BOOKING", fmt.Sprintf("Deleted booking ID: %d", id), "", "")
+
+	return nil
 }

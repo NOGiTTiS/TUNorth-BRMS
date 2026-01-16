@@ -26,5 +26,6 @@ type BookingService interface {
 	GetBookingByID(id uint) (*domain.Booking, error)
 	UpdateBookingStatus(id uint, status string, approverID uint) error
 	UpdateBooking(id uint, booking *domain.Booking) error
-	DeleteBooking(id uint) error
+	// DeleteBooking(id uint) error -> เปลี่ยนเป็น รับ actorID ด้วย
+	DeleteBooking(id uint, actorID uint) error
 }
