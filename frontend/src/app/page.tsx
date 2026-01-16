@@ -121,6 +121,14 @@ export default function Home() {
     );
   };
 
+  // 6. เมื่อคลิกที่วันที่ (สำหรับจอง)
+  const handleDateClick = (info: any) => {
+    if (isAuthenticated) {
+      // Redirect ไปหน้าจอง พร้อมส่งวันที่ไปด้วย
+      router.push(`/booking/create?date=${info.dateStr}`);
+    }
+  };
+
   // ถ้ายังโหลด Client ไม่เสร็จ ห้าม render เพื่อกัน Hydration Error
   if (!isMounted) return null;
 
@@ -241,6 +249,16 @@ export default function Home() {
             border-bottom: 1px solid #e2e8f0 !important;
             border-radius: 16px 16px 0 0 !important;
           }
+          .fc-daygrid-day-frame:hover .opacity-0 {
+            opacity: 1 !important;
+          }
+          .fc-daygrid-day-frame {
+            cursor: pointer;
+            transition: background-color 0.2s;
+          }
+          .fc-daygrid-day-frame:hover {
+            background-color: #f8fafc;
+          }
         `}</style>
         <FullCalendar
           plugins={[
@@ -259,6 +277,20 @@ export default function Home() {
           }}
           eventDisplay="block"
           eventContent={renderEventContent}
+          dayCellContent={(args) => (
+            <div className="w-full flex justify-between items-start">
+              <span className="text-slate-700 font-medium z-10">
+                {args.dayNumberText}
+              </span>
+              {isAuthenticated && (
+                <div className="opacity-0 hover:opacity-100 group-hover:opacity-100 transition-all duration-200">
+                  <div className="bg-tu-pink/10 text-tu-pink rounded-full p-1 cursor-pointer hover:bg-tu-pink hover:text-white shadow-sm">
+                    <Plus size={14} strokeWidth={2.5} />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           headerToolbar={{
             left: "prev,next today",
             center: "title",
@@ -266,6 +298,7 @@ export default function Home() {
           }}
           events={fetchEvents}
           eventClick={handleEventClick}
+          dateClick={handleDateClick}
           height="auto"
           contentHeight="auto"
           aspectRatio={1.5}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { Room } from "@/types/room";
 import { Resource } from "@/types/resource";
@@ -23,6 +23,9 @@ import { toast } from "sonner";
 
 export default function CreateBookingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const dateParam = searchParams.get("date"); // Get date from URL
+
   const { user, token, isAuthenticated, isInitialized } = useAuthStore();
 
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -36,13 +39,14 @@ export default function CreateBookingPage() {
     subject: "",
     room_id: "",
 
-    start_date: "",
+    start_date: dateParam || "", // Prefill if param exists
     start_time: "",
 
-    end_date: "",
+    end_date: dateParam || "", // Prefill if param exists
     end_time: "",
 
     department: "",
+    // ...
     phone: "",
     attendees: "",
     note: "",
