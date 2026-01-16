@@ -41,13 +41,15 @@ func main() {
 	settingService := services.NewSettingService(settingRepo)
 	settingHandler := http.NewSettingHandler(settingService)
 
+	// Auth (Move up for injection)
+	userRepo := storage.NewUserRepository(database.DB)
+
 	// --- Bookings (เพิ่มส่วนนี้) ---
 	bookingRepo := storage.NewBookingRepository(database.DB)
-	bookingService := services.NewBookingService(bookingRepo, settingService)
+	bookingService := services.NewBookingService(bookingRepo, settingService, userRepo)
 	bookingHandler := http.NewBookingHandler(bookingService)
 
-	// Auth (เพิ่มใหม่)
-	userRepo := storage.NewUserRepository(database.DB)
+	// Auth Service
 	authService := services.NewAuthService(userRepo)
 	authHandler := http.NewAuthHandler(authService)
 

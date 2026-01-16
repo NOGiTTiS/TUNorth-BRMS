@@ -2,6 +2,8 @@ package services
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 	"time"
 	"tunorth-brms-backend/internal/core/domain"
 	"tunorth-brms-backend/internal/core/ports"
@@ -10,12 +12,14 @@ import (
 type bookingService struct {
 	repo     ports.BookingRepository
 	settings ports.SettingService
+	userRepo ports.UserRepository
 }
 
-func NewBookingService(repo ports.BookingRepository, settings ports.SettingService) ports.BookingService {
+func NewBookingService(repo ports.BookingRepository, settings ports.SettingService, userRepo ports.UserRepository) ports.BookingService {
 	return &bookingService{
 		repo:     repo,
 		settings: settings,
+		userRepo: userRepo,
 	}
 }
 
@@ -26,6 +30,31 @@ func (s *bookingService) CreateBooking(booking *domain.Booking) error {
 	}
 	if booking.StartTime.After(booking.EndTime) || booking.StartTime.Equal(booking.EndTime) {
 		return errors.New("start time must be before end time")
+	}
+
+	// 1.5. Advance Booking Check
+	// Get User Role
+	user, err := s.userRepo.GetByID(booking.UserID)
+	isAdmin := false
+	if err == nil && user.Role == "admin" {
+		isAdmin = true
+	}
+
+	if !isAdmin {
+		advanceDaysStr := s.settings.GetSettingValue("advance_booking_days")
+		advanceDays, _ := strconv.Atoi(advanceDaysStr)
+
+		if advanceDays > 0 {
+			now := time.Now()
+			// Use server local time logic
+			// Create dates with 00:00:00 time part for comparison
+			bookingDate := time.Date(booking.StartTime.Year(), booking.StartTime.Month(), booking.StartTime.Day(), 0, 0, 0, 0, now.Location())
+			minDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, advanceDays)
+
+			if bookingDate.Before(minDate) {
+				return fmt.Errorf("must book at least %d days in advance", advanceDays)
+			}
+		}
 	}
 
 	// 2. Weekend Check
