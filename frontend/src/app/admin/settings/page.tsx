@@ -55,8 +55,31 @@ export default function AdminSettingsPage() {
   }, [searchParams]);
 
   // Derived state to group settings
-  const getGroupSettings = (group: string) =>
-    settings.filter((s) => s.group === group);
+  const getGroupSettings = (group: string) => {
+    const settingPriority: Record<string, number> = {
+      // Theme
+      theme_color: 1,
+      theme_color_secondary: 2,
+      bg_color_start: 3,
+      bg_color_end: 4,
+      // Images
+      site_logo: 1,
+      favicon: 2,
+      // General
+      site_name: 1,
+      site_description: 2,
+      copyright_text: 3,
+      institute_name: 4,
+    };
+
+    return settings
+      .filter((s) => s.group === group)
+      .sort((a, b) => {
+        const p1 = settingPriority[a.setting_name] || 99;
+        const p2 = settingPriority[b.setting_name] || 99;
+        return p1 - p2;
+      });
+  };
 
   useEffect(() => {
     if (!isInitialized) return;

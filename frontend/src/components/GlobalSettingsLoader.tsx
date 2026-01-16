@@ -16,6 +16,17 @@ export default function GlobalSettingsLoader() {
     if (themeColor) {
       document.documentElement.style.setProperty("--tu-pink", themeColor);
     }
+    const themeColorSecondary = get("theme_color_secondary");
+    if (themeColorSecondary) {
+      document.documentElement.style.setProperty(
+        "--tu-pink-hover",
+        themeColorSecondary
+      );
+      document.documentElement.style.setProperty(
+        "--tu-pink-light",
+        themeColorSecondary
+      );
+    }
 
     // Gradient Background
     const bgStart = get("bg_color_start");

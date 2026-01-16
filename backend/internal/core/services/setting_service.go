@@ -60,6 +60,7 @@ func (s *settingService) InitializeDefaults() error {
 
 		// Theme
 		{SettingName: "theme_color", SettingValue: "#db2777", Group: "theme", Type: "color", Label: "สีธีมหลัก", Description: "สีหลักของปุ่มและ Highlight (Default: Pink-600)"},
+		{SettingName: "theme_color_secondary", SettingValue: "#be185d", Group: "theme", Type: "color", Label: "สีธีมรอง (Hover / Highlight)", Description: "สีเมื่อเอาเมาส์ไปชี้ปุ่ม และสีไฮไลท์ข้อความ"},
 		{SettingName: "bg_color_start", SettingValue: "#f8fafc", Group: "theme", Type: "color", Label: "สีพื้นหลัง (เริ่ม)", Description: "Gradient Start"},
 		{SettingName: "bg_color_end", SettingValue: "#f1f5f9", Group: "theme", Type: "color", Label: "สีพื้นหลัง (จบ)", Description: "Gradient End"},
 
