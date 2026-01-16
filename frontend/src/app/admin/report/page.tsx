@@ -45,7 +45,7 @@ interface ReportStats {
 
 export default function ReportPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isInitialized } = useAuthStore();
 
   // Dates: Default to current month
   const now = new Date();
@@ -63,10 +63,11 @@ export default function ReportPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    if (!isInitialized) return;
     if (!isAuthenticated || user?.role !== "admin") {
       router.push("/");
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, isInitialized]);
 
   const fetchStats = async () => {
     setIsLoading(true);
@@ -133,6 +134,10 @@ export default function ReportPage() {
     "#8884d8",
     "#82ca9d",
   ];
+
+  if (isLoading || !isInitialized) {
+    return <div className="p-10 text-center">กำลังโหลดรายงาน...</div>;
+  }
 
   return (
     <div className="p-6 md:p-8 space-y-8 bg-slate-50 min-h-screen">

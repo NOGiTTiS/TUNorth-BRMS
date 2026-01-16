@@ -23,7 +23,7 @@ import { toast } from "sonner";
 
 export default function CreateBookingPage() {
   const router = useRouter();
-  const { user, token, isAuthenticated } = useAuthStore();
+  const { user, token, isAuthenticated, isInitialized } = useAuthStore();
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [resourceOptions, setResourceOptions] = useState<Resource[]>([]);
@@ -54,10 +54,14 @@ export default function CreateBookingPage() {
   });
 
   useEffect(() => {
+    if (!isInitialized) return;
     if (!isAuthenticated) {
       router.push("/login");
-      return;
     }
+  }, [isAuthenticated, router, isInitialized]);
+
+  useEffect(() => {
+    if (!isInitialized || !isAuthenticated) return;
 
     const fetchData = async () => {
       try {
@@ -82,7 +86,7 @@ export default function CreateBookingPage() {
     };
 
     fetchData();
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, isInitialized]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -213,7 +217,7 @@ export default function CreateBookingPage() {
     }
   };
 
-  if (pageLoading)
+  if (pageLoading || !isInitialized)
     return <div className="p-10 text-center">กำลังโหลดข้อมูล...</div>;
 
   return (

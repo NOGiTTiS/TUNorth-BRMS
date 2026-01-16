@@ -34,16 +34,17 @@ interface Log {
 
 export default function LogsPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isInitialized } = useAuthStore();
   const [logs, setLogs] = useState<Log[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
+    if (!isInitialized) return;
     if (!isAuthenticated || user?.role !== "admin") {
       router.push("/");
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, isInitialized]);
 
   const fetchLogs = async () => {
     setIsLoading(true);
@@ -85,6 +86,12 @@ export default function LogsPage() {
       log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
       log.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (isLoading || !isInitialized) {
+    return (
+      <div className="p-10 text-center text-slate-500">กำลังโหลดข้อมูล...</div>
+    );
+  }
 
   return (
     <div className="p-6 md:p-8 space-y-6 bg-slate-50 min-h-screen">

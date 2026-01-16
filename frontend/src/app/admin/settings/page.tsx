@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,11 +39,20 @@ interface SettingItem {
 
 export default function AdminSettingsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { token, isAuthenticated, isInitialized } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
   const [settings, setSettings] = useState<SettingItem[]>([]);
+
+  // Sync activeTab with URL
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   // Derived state to group settings
   const getGroupSettings = (group: string) =>
@@ -134,8 +143,10 @@ export default function AdminSettingsPage() {
 
       if (res.ok) {
         toast.success("บันทึกการตั้งค่าเรียบร้อยแล้ว");
-        // Reload page to reflect changes globally? Or useSettings hook might need refresh trigger
-        window.location.reload();
+        // Refetch settings to update local state without reload
+        await fetchSettings();
+        // Force router refresh to update server components if any (like layout)
+        router.refresh();
       } else {
         toast.error("บันทึกไม่สำเร็จ");
       }
@@ -146,7 +157,7 @@ export default function AdminSettingsPage() {
     }
   };
 
-  if (loading)
+  if (loading || !isInitialized)
     return <div className="p-10 text-center">Loading Settings...</div>;
 
   // Render Component Helpers
@@ -297,8 +308,17 @@ export default function AdminSettingsPage() {
     { id: "popup", label: "Popup", icon: Monitor }, // Reusing Icon
   ];
 
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    // Update URL without reloading
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tabId);
+    router.push(`?${params.toString()}`);
+  };
+
   return (
     <div className="container mx-auto py-10 px-4 max-w-5xl">
+      {/* ... header ... h1 etc */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
@@ -326,7 +346,7 @@ export default function AdminSettingsPage() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl mb-1 transition-all font-medium text-sm ${
                 activeTab === tab.id
                   ? "bg-tu-pink text-white shadow-md shadow-tu-pink/20"

@@ -23,7 +23,7 @@ import {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { user, logout, isAuthenticated } = useAuthStore();
+  const { user, logout, isAuthenticated, isInitialized } = useAuthStore();
   const { fetchSettings, get } = useSettings();
   const [stats, setStats] = useState({
     totalBookings: 0,
@@ -51,6 +51,7 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
+    if (!isInitialized) return; // Wait for init
     if (!isAuthenticated) {
       router.push("/");
       return;
@@ -154,7 +155,7 @@ export default function AdminDashboard() {
     );
   };
 
-  if (loading)
+  if (loading || !isInitialized)
     return (
       <div className="p-10 text-center text-slate-500">
         กำลังประมวลผลข้อมูล...
