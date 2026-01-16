@@ -28,7 +28,17 @@ func (s *bookingService) CreateBooking(booking *domain.Booking) error {
 		return errors.New("start time must be before end time")
 	}
 
-	// 2. Conflict Check (ป้องกันจองซ้ำ)
+	// 2. Weekend Check
+	allowWeekend := s.settings.GetSettingValue("allow_weekend")
+	// ถ้าเป็น "false" หรือปิดอยู่ (default) ห้ามจองเสาร์-อาทิตย์
+	if allowWeekend == "false" {
+		if booking.StartTime.Weekday() == time.Saturday || booking.StartTime.Weekday() == time.Sunday ||
+			booking.EndTime.Weekday() == time.Saturday || booking.EndTime.Weekday() == time.Sunday {
+			return errors.New("booking is not allowed on weekends")
+		}
+	}
+
+	// 3. Conflict Check (ป้องกันจองซ้ำ)
 	count, err := s.repo.CountOverlapping(booking.RoomID, booking.StartTime, booking.EndTime)
 	if err != nil {
 		return err
