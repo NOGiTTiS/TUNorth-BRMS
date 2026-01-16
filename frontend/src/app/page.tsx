@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Room } from "@/types/room";
 import { Booking } from "@/types/booking";
 import BookingDetailModal from "@/components/BookingDetailModal";
+import PopupModal from "@/components/PopupModal";
 import { useAuthStore } from "@/store/authStore";
 import { UserCircle, CalendarDays, Plus } from "lucide-react";
 
@@ -294,6 +295,7 @@ export default function Home() {
         onClose={() => setIsModalOpen(false)}
         booking={selectedBooking}
       />
+      <PopupModal />
     </div>
   );
 }
