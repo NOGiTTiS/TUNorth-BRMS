@@ -40,6 +40,19 @@ func (h *RoomHandler) GetAllRooms(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
+
+    // Filter by status if provided (e.g. ?status=active)
+    statusFilter := c.Query("status")
+    if statusFilter != "" {
+        var filtered []domain.Room
+        for _, r := range rooms {
+            if r.Status == statusFilter {
+                filtered = append(filtered, r)
+            }
+        }
+        return c.JSON(filtered)
+    }
+
 	return c.JSON(rooms)
 }
 

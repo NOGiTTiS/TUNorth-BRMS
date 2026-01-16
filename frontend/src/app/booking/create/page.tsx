@@ -65,8 +65,10 @@ export default function CreateBookingPage() {
 
     const fetchData = async () => {
       try {
-        // Fetch Rooms
-        const roomsRes = await fetch("http://localhost:8080/api/rooms");
+        // Fetch Rooms (Only active ones)
+        const roomsRes = await fetch(
+          "http://localhost:8080/api/rooms?status=active"
+        );
         if (roomsRes.ok) {
           const roomsData = await roomsRes.json();
           setRooms(roomsData);

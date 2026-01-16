@@ -10,19 +10,21 @@ import (
 )
 
 type bookingService struct {
-	repo     ports.BookingRepository
-	settings ports.SettingService
-	userRepo ports.UserRepository
-	notifier ports.NotificationService
+	repo       ports.BookingRepository
+	roomRepo   ports.RoomRepository // Add RoomRepo
+	settings   ports.SettingService
+	userRepo   ports.UserRepository
+	notifier   ports.NotificationService
 	logService ports.LogService
 }
 
-func NewBookingService(repo ports.BookingRepository, settings ports.SettingService, userRepo ports.UserRepository, notifier ports.NotificationService, logService ports.LogService) ports.BookingService {
+func NewBookingService(repo ports.BookingRepository, roomRepo ports.RoomRepository, settings ports.SettingService, userRepo ports.UserRepository, notifier ports.NotificationService, logService ports.LogService) ports.BookingService {
 	return &bookingService{
-		repo:     repo,
-		settings: settings,
-		userRepo: userRepo,
-		notifier: notifier,
+		repo:       repo,
+		roomRepo:   roomRepo,
+		settings:   settings,
+		userRepo:   userRepo,
+		notifier:   notifier,
 		logService: logService,
 	}
 }
@@ -34,6 +36,15 @@ func (s *bookingService) CreateBooking(booking *domain.Booking) error {
 	}
 	if booking.StartTime.After(booking.EndTime) || booking.StartTime.Equal(booking.EndTime) {
 		return errors.New("start time must be before end time")
+	}
+
+	// 1.2 Check Room Status
+	room, err := s.roomRepo.GetByID(booking.RoomID)
+	if err != nil {
+		return errors.New("room not found")
+	}
+	if room.Status != "active" {
+		return fmt.Errorf("room is not available (Status: %s)", room.Status)
 	}
 
 	// 1.5. Advance Booking Check
