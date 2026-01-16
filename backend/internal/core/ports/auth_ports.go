@@ -5,7 +5,8 @@ import "tunorth-brms-backend/internal/core/domain"
 type UserRepository interface {
 	Create(user *domain.User) error
 	GetByUsername(username string) (*domain.User, error)
-	GetByUsernameOrEmail(identifier string) (*domain.User, error) // Added
+	GetByEmail(email string) (*domain.User, error) // Added for explicit check
+	GetByUsernameOrEmail(identifier string) (*domain.User, error)
 	GetByID(id uint) (*domain.User, error)
 	GetAll() ([]domain.User, error)
 	Update(user *domain.User) error

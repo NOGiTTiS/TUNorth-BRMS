@@ -25,6 +25,12 @@ func (r *userRepository) GetByUsername(username string) (*domain.User, error) {
 	return &user, err
 }
 
+func (r *userRepository) GetByEmail(email string) (*domain.User, error) {
+	var user domain.User
+	err := r.db.Where("email = ?", email).First(&user).Error
+	return &user, err
+}
+
 func (r *userRepository) GetByUsernameOrEmail(identifier string) (*domain.User, error) {
 	var user domain.User
 	err := r.db.Where("username = ? OR email = ?", identifier, identifier).First(&user).Error

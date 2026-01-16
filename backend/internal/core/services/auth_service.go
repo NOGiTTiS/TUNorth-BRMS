@@ -27,7 +27,13 @@ func (s *authService) Register(user *domain.User) error {
 		return errors.New("username already exists")
 	}
 
-	// 2. Hash Password
+	// 2. ตรวจสอบว่ามี Email นี้หรือยัง
+	existingEmail, _ := s.userRepo.GetByEmail(user.Email)
+	if existingEmail != nil && existingEmail.ID != 0 {
+		return errors.New("email already exists")
+	}
+
+	// 3. Hash Password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
