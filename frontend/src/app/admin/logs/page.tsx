@@ -96,12 +96,12 @@ export default function LogsPage() {
 
       <Card className="rounded-2xl border-slate-200 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <div className="flex items-center gap-2 w-full md:w-1/2">
+          <div className="flex items-center gap-2 w-full md:w-1/2 ">
             <Input
               placeholder="ค้นหาชื่อ, กิจกรรม, หรือรายละเอียด..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="rounded-xl"
+              className="w-full border border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-tu-pink focus-visible:border-tu-pink focus-visible:ring-offset-0 shadow-sm transition-all"
             />
             <Button className="bg-tu-pink hover:bg-tu-pink-hover text-white rounded-xl">
               <Search className="w-4 h-4 mr-2" />

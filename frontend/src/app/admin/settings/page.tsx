@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import {
   Settings,
@@ -18,6 +19,13 @@ import {
   MessageSquare,
 } from "lucide-react";
 import Image from "next/image";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Types
 interface SettingItem {
@@ -190,7 +198,7 @@ export default function AdminSettingsPage() {
               onChange={(e) =>
                 handleValueChange(setting.setting_name, e.target.value)
               }
-              className="w-full max-w-[150px] p-3 border border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-tu-pink focus-visible:border-tu-pink focus-visible:ring-offset-0 shadow-sm transition-all font-mono text-sm uppercase"
+              className="w-full h-12 font-mono text-sm uppercase"
             />
           </div>
         );
@@ -248,16 +256,22 @@ export default function AdminSettingsPage() {
         );
       case "select":
         return (
-          <select
+          <Select
             value={setting.setting_value}
-            onChange={(e) =>
-              handleValueChange(setting.setting_name, e.target.value)
+            onValueChange={(value) =>
+              handleValueChange(setting.setting_name, value)
             }
-            className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-tu-pink focus:border-tu-pink transition-all placeholder-gray-300 bg-white"
           >
-            <option value="pending">รออนุมัติ (Pending)</option>
-            <option value="approved">อนุมัติอัตโนมัติ (Approved)</option>
-          </select>
+            <SelectTrigger className="w-full h-12">
+              <SelectValue placeholder="เลือกสถานะ" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pending">รออนุมัติ (Pending)</SelectItem>
+              <SelectItem value="approved">
+                อนุมัติอัตโนมัติ (Approved)
+              </SelectItem>
+            </SelectContent>
+          </Select>
         );
       default: // text, number, password
         return (
@@ -267,7 +281,7 @@ export default function AdminSettingsPage() {
             onChange={(e) =>
               handleValueChange(setting.setting_name, e.target.value)
             }
-            className="w-full p-3 border border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-tu-pink focus-visible:border-tu-pink focus-visible:ring-offset-0 shadow-sm transition-all"
+            className="w-full h-12"
           />
         );
     }
@@ -300,7 +314,7 @@ export default function AdminSettingsPage() {
         <Button
           onClick={saveSettings}
           disabled={saving}
-          className="rounded-full bg-tu-pink hover:bg-tu-pink/90 px-8 shadow-lg shadow-tu-pink/20"
+          className="px-8 shadow-md"
         >
           <Save className="mr-2 h-4 w-4" /> บันทึกการตั้งค่า
         </Button>
@@ -308,7 +322,7 @@ export default function AdminSettingsPage() {
 
       <div className="flex flex-col md:flex-row gap-8 items-start">
         {/* Sidebar Tabs */}
-        <div className="w-full md:w-64 bg-white rounded-3xl shadow-sm border border-slate-100 p-4 shrink-0">
+        <Card className="w-full md:w-64 p-4 shrink-0 h-fit">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -323,39 +337,41 @@ export default function AdminSettingsPage() {
               {tab.label}
             </button>
           ))}
-        </div>
+        </Card>
 
         {/* Content Area */}
-        <div className="flex-1 w-full bg-white rounded-3xl shadow-sm border border-slate-100 p-8 min-h-[500px]">
-          <h2 className="text-xl font-bold text-slate-800 mb-6 pb-4 border-b border-slate-100 capitalize flex items-center gap-2">
-            {tabs.find((t) => t.id === activeTab)?.label} Settings
-          </h2>
+        <Card className="flex-1 w-full min-h-[500px]">
+          <CardContent className="p-8">
+            <h2 className="text-xl font-bold text-slate-800 mb-6 pb-4 border-b border-slate-100 capitalize flex items-center gap-2">
+              {tabs.find((t) => t.id === activeTab)?.label} Settings
+            </h2>
 
-          <div className="space-y-6">
-            {getGroupSettings(activeTab).map((setting) => (
-              <div
-                key={setting.setting_name}
-                className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start pb-6 border-b border-slate-50 last:border-0 last:pb-0"
-              >
-                <div className="md:col-span-4">
-                  <Label className="text-base text-slate-700 font-medium">
-                    {setting.label}
-                  </Label>
-                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                    {setting.description}
-                  </p>
+            <div className="space-y-6">
+              {getGroupSettings(activeTab).map((setting) => (
+                <div
+                  key={setting.setting_name}
+                  className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start pb-6 border-b border-slate-50 last:border-0 last:pb-0"
+                >
+                  <div className="md:col-span-4">
+                    <Label className="text-base text-slate-700 font-medium">
+                      {setting.label}
+                    </Label>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                      {setting.description}
+                    </p>
+                  </div>
+                  <div className="md:col-span-8">{renderInput(setting)}</div>
                 </div>
-                <div className="md:col-span-8">{renderInput(setting)}</div>
-              </div>
-            ))}
+              ))}
 
-            {getGroupSettings(activeTab).length === 0 && (
-              <div className="text-center py-20 text-slate-400">
-                ไม่มีการตั้งค่าในหมวดหมู่นี้
-              </div>
-            )}
-          </div>
-        </div>
+              {getGroupSettings(activeTab).length === 0 && (
+                <div className="text-center py-20 text-slate-400">
+                  ไม่มีการตั้งค่าในหมวดหมู่นี้
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

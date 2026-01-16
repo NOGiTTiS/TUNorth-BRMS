@@ -152,7 +152,7 @@ export default function ReportPage() {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="mt-1 rounded-xl"
+              className="w-full border border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-tu-pink focus-visible:border-tu-pink focus-visible:ring-offset-0 shadow-sm transition-all"
             />
           </div>
           <div className="w-full md:w-auto">
@@ -163,7 +163,7 @@ export default function ReportPage() {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="mt-1 rounded-xl"
+              className="w-full border border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-tu-pink focus-visible:border-tu-pink focus-visible:ring-offset-0 shadow-sm transition-all"
             />
           </div>
           <div className="w-full md:w-48">
@@ -171,7 +171,7 @@ export default function ReportPage() {
               สถานะ
             </label>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="mt-1 rounded-xl">
+              <SelectTrigger>
                 <SelectValue placeholder="ทั้งหมด" />
               </SelectTrigger>
               <SelectContent>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
+import { useSettings } from "@/hooks/useSettings";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,6 +24,7 @@ import {
 export default function AdminDashboard() {
   const router = useRouter();
   const { user, logout, isAuthenticated } = useAuthStore();
+  const { fetchSettings, get } = useSettings();
   const [stats, setStats] = useState({
     totalBookings: 0,
     approvedBookings: 0,
@@ -53,6 +55,8 @@ export default function AdminDashboard() {
       router.push("/");
       return;
     }
+
+    fetchSettings(); // Fetch settings
 
     const loadStats = async () => {
       // Parallel Fetch
@@ -126,7 +130,7 @@ export default function AdminDashboard() {
               className="flex-1 flex flex-col items-center group relative h-full justify-end"
             >
               {/* Tooltip */}
-              <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs px-2 py-1 rounded pointer-events-none mb-2 z-10 w-max">
+              <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity text-black px-2 py-1 rounded pointer-events-none mb-2 z-10 w-max">
                 {val} รายการ
               </div>
 
@@ -135,7 +139,7 @@ export default function AdminDashboard() {
                 className="w-full max-w-[40px] rounded-t-sm transition-all duration-500 ease-out opacity-80 hover:opacity-100"
                 style={{
                   height: `${heightPercent}%`,
-                  backgroundColor: "#D81B60", // Force Hex Color
+                  backgroundColor: get("theme_color", "#D81B60"), // Use dynamic color
                 }}
               ></div>
 
@@ -166,9 +170,9 @@ export default function AdminDashboard() {
         <div className="flex items-center gap-3">
           <Button
             onClick={() => router.push("/booking/create")}
-            className="bg-green-500 hover:bg-green-600 text-white rounded-md shadow-sm"
+            className="w-full md:w-auto bg-tu-pink hover:bg-tu-pink-hover text-white rounded-full shadow-lg shadow-tu-pink/20 px-6"
           >
-            จองห้อง
+            <Plus className="mr-2 h-4 w-4" /> จองห้องประชุม
           </Button>
 
           <div className="hidden md:flex items-center px-4 py-2 bg-white border border-slate-200 rounded-md text-sm text-slate-600 shadow-sm">

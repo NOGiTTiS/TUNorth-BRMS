@@ -146,7 +146,7 @@ export default function MyProfilePage() {
                 name="full_name"
                 value={formData.full_name}
                 onChange={handleChange}
-                className="pl-10 rounded-xl border-slate-200 focus:border-tu-pink focus:ring-tu-pink"
+                className="pl-10 border border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-tu-pink focus-visible:border-tu-pink focus-visible:ring-offset-0 shadow-sm transition-all"
                 placeholder="ชื่อ-นามสกุล"
               />
             </div>
@@ -162,7 +162,7 @@ export default function MyProfilePage() {
                   name="department"
                   value={formData.department}
                   onChange={handleChange}
-                  className="pl-10 rounded-xl border-slate-200 focus:border-tu-pink focus:ring-tu-pink"
+                  className="pl-10 border border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-tu-pink focus-visible:border-tu-pink focus-visible:ring-offset-0 shadow-sm transition-all"
                   placeholder="ระบุแผนก"
                 />
               </div>
@@ -177,7 +177,7 @@ export default function MyProfilePage() {
                   name="tel"
                   value={formData.tel}
                   onChange={handleChange}
-                  className="pl-10 rounded-xl border-slate-200 focus:border-tu-pink focus:ring-tu-pink"
+                  className="pl-10 border border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-tu-pink focus-visible:border-tu-pink focus-visible:ring-offset-0 shadow-sm transition-all"
                   placeholder="08X-XXXXXXX"
                 />
               </div>
@@ -193,7 +193,7 @@ export default function MyProfilePage() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="pl-10 rounded-xl border-slate-200 focus:border-tu-pink focus:ring-tu-pink"
+                className="pl-10 border border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-tu-pink focus-visible:border-tu-pink focus-visible:ring-offset-0 shadow-sm transition-all"
                 placeholder="example@email.com"
               />
             </div>
@@ -213,7 +213,7 @@ export default function MyProfilePage() {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="pl-10 rounded-xl border-slate-200 focus:border-tu-pink focus:ring-tu-pink"
+                    className="pl-10 border border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-tu-pink focus-visible:border-tu-pink focus-visible:ring-offset-0 shadow-sm transition-all"
                     placeholder="••••••••"
                   />
                 </div>
@@ -227,7 +227,7 @@ export default function MyProfilePage() {
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="pl-10 rounded-xl border-slate-200 focus:border-tu-pink focus:ring-tu-pink"
+                    className="pl-10 border border-gray-200 rounded-xl focus-visible:ring-2 focus-visible:ring-tu-pink focus-visible:border-tu-pink focus-visible:ring-offset-0 shadow-sm transition-all"
                     placeholder="••••••••"
                   />
                 </div>
