@@ -19,11 +19,13 @@ import { ArrowLeft, CalendarClock, Trash2 } from "lucide-react";
 
 export default function MyBookingsPage() {
   const router = useRouter();
-  const { user, token, isAuthenticated } = useAuthStore();
+  const { user, token, isAuthenticated, isInitialized } = useAuthStore();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isInitialized) return;
+
     if (!isAuthenticated || !user) {
       router.push("/login");
       return;
@@ -54,7 +56,7 @@ export default function MyBookingsPage() {
     };
 
     fetchMyBookings();
-  }, [isAuthenticated, router, user, token]);
+  }, [isAuthenticated, router, user, token, isInitialized]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("th-TH", {
@@ -66,7 +68,8 @@ export default function MyBookingsPage() {
     });
   };
 
-  if (loading) return <div className="p-10 text-center">Loading...</div>;
+  if (loading || !isInitialized)
+    return <div className="p-10 text-center">Loading...</div>;
 
   return (
     <div className="container mx-auto py-10 px-4 space-y-8">
@@ -168,16 +171,21 @@ export default function MyBookingsPage() {
                               }
                             );
                             if (res.ok) {
-                              // setBookings(prev => prev.filter(b => b.id !== booking.id)); // If hard delete
-                              // If soft delete/cancel API changes status, reload.
-                              // Assuming DELETE removes it based on previous conversation context.
                               setBookings((prev) =>
                                 prev.filter((b) => b.id !== booking.id)
                               );
-                              // Optional: toast success
+                              alert("ยกเลิกการจองสำเร็จ");
+                            } else {
+                              const errData = await res.json();
+                              alert(
+                                `ไม่สามารถยกเลิกการจองได้: ${
+                                  errData.error || res.statusText
+                                }`
+                              );
                             }
                           } catch (e) {
                             console.error(e);
+                            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
                           }
                         }}
                         title="ยกเลิกการจอง"

@@ -97,7 +97,7 @@ func (s *bookingService) CreateBooking(booking *domain.Booking) error {
 	go s.notifier.NotifyAdminNewBooking(booking)
 
 	// 6. Log Activity
-	go s.logService.LogAction(booking.UserID, "CREATE", fmt.Sprintf("จองห้อง ID: %d วันที่: %s", booking.RoomID, booking.StartTime.Format("02/01/2006")), "", "")
+	go s.logService.LogAction(booking.UserID, "CREATE_BOOKING", fmt.Sprintf("จองห้อง ID: %d วันที่: %s", booking.RoomID, booking.StartTime.Format("02/01/2006")), "", "")
 
 	return nil
 }
@@ -168,7 +168,7 @@ func (s *bookingService) UpdateBookingStatus(id uint, status string, approverID 
 	return nil
 }
 
-func (s *bookingService) UpdateBooking(id uint, updatedBooking *domain.Booking) error {
+func (s *bookingService) UpdateBooking(id uint, updatedBooking *domain.Booking, actorID uint) error {
     existing, err := s.repo.GetByID(id)
     if err != nil {
         return err
@@ -204,7 +204,14 @@ func (s *bookingService) UpdateBooking(id uint, updatedBooking *domain.Booking) 
     existing.User = domain.User{}
     existing.Approver = nil
 
-    return s.repo.Update(existing)
+    if err := s.repo.Update(existing); err != nil {
+		return err
+	}
+
+	// Log
+	go s.logService.LogAction(actorID, "UPDATE_BOOKING", fmt.Sprintf("Updated booking ID: %d", id), "", "")
+
+	return nil
 }
 
 func (s *bookingService) DeleteBooking(id uint, actorID uint) error {

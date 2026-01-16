@@ -25,7 +25,7 @@ type BookingService interface {
 	GetBookingsByRange(start, end string) ([]domain.Booking, error) // รับ string แล้วแปลงเป็น time ใน service
 	GetBookingByID(id uint) (*domain.Booking, error)
 	UpdateBookingStatus(id uint, status string, approverID uint) error
-	UpdateBooking(id uint, booking *domain.Booking) error
+	UpdateBooking(id uint, booking *domain.Booking, actorID uint) error
 	// DeleteBooking(id uint) error -> เปลี่ยนเป็น รับ actorID ด้วย
 	DeleteBooking(id uint, actorID uint) error
 }

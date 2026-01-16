@@ -32,7 +32,7 @@ func main() {
 
 	// 3. Dependency Injection (ต่อท่อส่งข้อมูล)
 	// DB -> Repository -> Service -> Handler
-	
+
 	// Log Module (Init first to inject into others)
 	logRepo := storage.NewLogRepository(database.DB)
 	logService := services.NewLogService(logRepo)
@@ -44,36 +44,25 @@ func main() {
 
 	// Settings (Admin) - Move up because injection is needed
 	settingRepo := storage.NewSettingRepository(database.DB)
-	settingService := services.NewSettingService(settingRepo)
+	settingService := services.NewSettingService(settingRepo, logService)
 	settingHandler := http.NewSettingHandler(settingService)
-
-
 
 	// Auth (Move up for injection)
 	userRepo := storage.NewUserRepository(database.DB)
 
-
-
 	// User Management
-    userService := services.NewUserService(userRepo, logService)
-    userHandler := http.NewUserHandler(userService)
+	userService := services.NewUserService(userRepo, logService)
+	userHandler := http.NewUserHandler(userService)
 
 	// Resource
 	resRepo := storage.NewResourceRepository(database.DB)
-    resService := services.NewResourceService(resRepo)
+	resService := services.NewResourceService(resRepo, logService)
 	resHandler := http.NewResourceHandler(resService)
 
 	// Report Module
 	reportRepo := storage.NewReportRepository(database.DB)
 	reportService := services.NewReportService(reportRepo)
 	reportHandler := http.NewReportHandler(reportService)
-
-
-
-	// Log Module
-	logRepo := storage.NewLogRepository(database.DB)
-	logService := services.NewLogService(logRepo)
-	logHandler := http.NewLogHandler(logService)
 
 	// Notification
 	notifService := services.NewNotificationService(settingService, roomRepo, userRepo)
@@ -110,6 +99,11 @@ func main() {
 	// Public Settings (ไม่ต้อง Login ก็ได้ จะได้โหลด Logo ได้)
 	api.Get("/settings/public", settingHandler.GetPublicSettings)
 
+	// Middleware JWT - Init here to use in routes below
+	jwtMiddleware := jwtware.New(jwtware.Config{
+		SigningKey: jwtware.SigningKey{Key: []byte(os.Getenv("JWT_SECRET"))},
+	})
+
 	// Room Routes
 	rooms := api.Group("/rooms")
 	rooms.Post("/", roomHandler.CreateRoom)      // สร้างห้อง
@@ -118,28 +112,23 @@ func main() {
 	rooms.Put("/:id", roomHandler.UpdateRoom)    // แก้ไขห้อง
 	rooms.Delete("/:id", roomHandler.DeleteRoom) // ลบห้อง
 
-	// Booking Routes 
+	// Booking Routes
 	bookings := api.Group("/bookings")
-	bookings.Get("/", bookingHandler.GetBookings) // รองรับ ?start=...&end=...
-	bookings.Post("/", bookingHandler.CreateBooking)
-	bookings.Patch("/:id/status", bookingHandler.UpdateStatus)
-	bookings.Put("/:id", bookingHandler.UpdateBooking)
-	bookings.Delete("/:id", bookingHandler.DeleteBooking)
+	bookings.Get("/", bookingHandler.GetBookings) // Public for Calendar View?
+	// Protected Booking Routes
+	bookings.Post("/", jwtMiddleware, bookingHandler.CreateBooking)
+	bookings.Patch("/:id/status", jwtMiddleware, bookingHandler.UpdateStatus)
+	bookings.Put("/:id", jwtMiddleware, bookingHandler.UpdateBooking)
+	bookings.Delete("/:id", jwtMiddleware, bookingHandler.DeleteBooking)
 
-	// Auth Routes 
+	// Auth Routes
 	api.Post("/register", authHandler.Register)
 	api.Post("/login", authHandler.Login)
 
-	// Middleware JWT
-	// ใช้ contrib/jwt เพื่อรองรับ golang-jwt/jwt/v5
-	jwtMiddleware := jwtware.New(jwtware.Config{
-		SigningKey: jwtware.SigningKey{Key: []byte(os.Getenv("JWT_SECRET"))},
-	})
-	
-	// Protected Routes
+	// Protected Routes (Already used jwtMiddleware inside)
 	api.Get("/me", jwtMiddleware, authHandler.GetMe)
 	api.Put("/me", jwtMiddleware, authHandler.UpdateMe)
-	
+
 	// Settings Protected
 	api.Get("/settings", jwtMiddleware, settingHandler.GetAllSettings)
 	api.Put("/settings", jwtMiddleware, settingHandler.UpdateSettings)
@@ -149,18 +138,18 @@ func main() {
 	// bookings.Use(jwtMiddleware)
 
 	// User Routes
-    users := api.Group("/users")
-    users.Get("/", userHandler.GetAllUsers)
-    users.Put("/:id", userHandler.UpdateUser)
-    users.Delete("/:id", userHandler.DeleteUser)
+	users := api.Group("/users")
+	users.Get("/", userHandler.GetAllUsers)
+	users.Put("/:id", userHandler.UpdateUser)
+	users.Delete("/:id", userHandler.DeleteUser)
 	users.Post("/import", userHandler.ImportUsers)
 
 	// Resource Routes
-    resources := api.Group("/resources")
-    resources.Get("/", resHandler.GetAllResources)
-    resources.Post("/", resHandler.CreateResource)
-    resources.Put("/:id", resHandler.UpdateResource)
-    resources.Delete("/:id", resHandler.DeleteResource)
+	resources := api.Group("/resources")
+	resources.Get("/", resHandler.GetAllResources)
+	resources.Post("/", resHandler.CreateResource)
+	resources.Put("/:id", resHandler.UpdateResource)
+	resources.Delete("/:id", resHandler.DeleteResource)
 
 	// Report Routes
 	api.Get("/reports/dashboard", reportHandler.GetDashboardStats)
@@ -168,7 +157,6 @@ func main() {
 	// Log Routes
 	api.Get("/logs", logHandler.GetLogs)
 	api.Post("/logs/test", logHandler.CreateTestLog) // For Testing
-
 
 	// Test Route
 	app.Get("/", func(c *fiber.Ctx) error {

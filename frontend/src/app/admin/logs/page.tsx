@@ -76,13 +76,20 @@ export default function LogsPage() {
       case "UPDATE":
       case "UPDATE_USER":
       case "UPDATE_ROOM":
+      case "UPDATE_BOOKING":
+      case "UPDATE_RESOURCE":
+      case "UPDATE_SETTINGS":
         return "bg-blue-100 text-blue-800 hover:bg-blue-100";
       case "CREATE":
       case "CREATE_USER":
       case "CREATE_ROOM":
+      case "CREATE_BOOKING":
+      case "CREATE_RESOURCE":
         return "bg-teal-100 text-teal-800 hover:bg-teal-100";
       case "DELETE_USER":
       case "DELETE_ROOM":
+      case "DELETE_BOOKING":
+      case "DELETE_RESOURCE":
       case "rejeCT": // Case insensitive check handled by switch? No, value is UPPERCASE in switch
       case "REJECT":
       case "CANCEL":

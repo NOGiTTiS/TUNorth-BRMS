@@ -205,8 +205,19 @@ func (h *BookingHandler) UpdateBooking(c *fiber.Ctx) error {
     booking.RoomID = input.RoomID
     booking.StartTime = input.StartTime
     booking.EndTime = input.EndTime
+    
+    // Get User ID from Token (Assuming Middleware puts it in Locals "user_id" or similar)
+	userCtx := c.Locals("user")
+    actorID := uint(0)
+	if userCtx != nil {
+        userToken := userCtx.(*jwt.Token)
+        claims := userToken.Claims.(jwt.MapClaims)
+        if idFloat, ok := claims["user_id"].(float64); ok {
+            actorID = uint(idFloat)
+        }
+    }
 
-    if err := h.service.UpdateBooking(uint(id), &booking); err != nil {
+    if err := h.service.UpdateBooking(uint(id), &booking, actorID); err != nil {
         return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
     }
     

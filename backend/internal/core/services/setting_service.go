@@ -1,16 +1,18 @@
 package services
 
 import (
+	"fmt"
 	"tunorth-brms-backend/internal/core/domain"
 	"tunorth-brms-backend/internal/core/ports"
 )
 
 type settingService struct {
-	repo ports.SettingRepository
+	repo       ports.SettingRepository
+	logService ports.LogService
 }
 
-func NewSettingService(repo ports.SettingRepository) ports.SettingService {
-	return &settingService{repo: repo}
+func NewSettingService(repo ports.SettingRepository, logService ports.LogService) ports.SettingService {
+	return &settingService{repo: repo, logService: logService}
 }
 
 func (s *settingService) GetAllSettings() (map[string]interface{}, []domain.Setting, error) {
@@ -28,7 +30,12 @@ func (s *settingService) GetAllSettings() (map[string]interface{}, []domain.Sett
 }
 
 func (s *settingService) UpdateSettings(updates []domain.Setting) error {
-	return s.repo.UpdateBatch(updates)
+	if err := s.repo.UpdateBatch(updates); err != nil {
+		return err
+	}
+	// Note: We don't have actorID here, using 0 for now.
+	go s.logService.LogAction(0, "UPDATE_SETTINGS", fmt.Sprintf("Updated %d settings", len(updates)), "", "")
+	return nil
 }
 
 func (s *settingService) GetSettingValue(key string) string {
