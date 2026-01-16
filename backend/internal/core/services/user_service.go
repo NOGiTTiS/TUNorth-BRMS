@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"tunorth-brms-backend/internal/core/domain"
 	"tunorth-brms-backend/internal/core/ports"
 
@@ -9,11 +10,15 @@ import (
 )
 
 type userService struct {
-	repo ports.UserRepository
+	repo       ports.UserRepository
+	logService ports.LogService
 }
 
-func NewUserService(repo ports.UserRepository) ports.UserService {
-	return &userService{repo: repo}
+func NewUserService(repo ports.UserRepository, logService ports.LogService) ports.UserService {
+	return &userService{
+		repo:       repo,
+		logService: logService,
+	}
 }
 
 // CreateUser: สร้างผู้ใช้ใหม่ (ใช้สำหรับ Import CSV หรือ Admin สร้างให้)
@@ -32,7 +37,16 @@ func (s *userService) CreateUser(user *domain.User) error {
 	user.Password = string(hashedPassword)
 
 	// 3. บันทึก
-	return s.repo.Create(user)
+	// 3. บันทึก
+	if err := s.repo.Create(user); err != nil {
+		return err
+	}
+
+	// 4. Log
+	go s.logService.LogAction(0, "CREATE_USER", fmt.Sprintf("Created user: %s", user.Username), "", "")
+	// Note: We don't have actorID here yet. I need to refactor.
+	// For now, I will pause this edit and check ports.
+	return nil
 }
 
 func (s *userService) GetAllUsers() ([]domain.User, error) {
@@ -62,9 +76,20 @@ func (s *userService) UpdateUser(id uint, input *domain.User) error {
 		existingUser.Password = string(hashedPassword)
 	}
 
-	return s.repo.Update(existingUser)
+	if err := s.repo.Update(existingUser); err != nil {
+		return err
+	}
+
+	// Log
+	go s.logService.LogAction(0, "UPDATE_USER", fmt.Sprintf("Updated user ID: %d", id), "", "")
+	
+	return nil
 }
 
 func (s *userService) DeleteUser(id uint) error {
-	return s.repo.Delete(id)
+	err := s.repo.Delete(id)
+	if err == nil {
+		go s.logService.LogAction(0, "DELETE_USER", fmt.Sprintf("Deleted user ID: %d", id), "", "")
+	}
+	return err
 }

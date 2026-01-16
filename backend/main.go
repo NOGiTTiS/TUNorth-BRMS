@@ -32,8 +32,14 @@ func main() {
 
 	// 3. Dependency Injection (ต่อท่อส่งข้อมูล)
 	// DB -> Repository -> Service -> Handler
+	
+	// Log Module (Init first to inject into others)
+	logRepo := storage.NewLogRepository(database.DB)
+	logService := services.NewLogService(logRepo)
+	logHandler := http.NewLogHandler(logService)
+
 	roomRepo := storage.NewRoomRepository(database.DB)
-	roomService := services.NewRoomService(roomRepo)
+	roomService := services.NewRoomService(roomRepo, logService)
 	roomHandler := http.NewRoomHandler(roomService)
 
 	// Settings (Admin) - Move up because injection is needed
@@ -41,13 +47,15 @@ func main() {
 	settingService := services.NewSettingService(settingRepo)
 	settingHandler := http.NewSettingHandler(settingService)
 
+
+
 	// Auth (Move up for injection)
 	userRepo := storage.NewUserRepository(database.DB)
 
 
 
 	// User Management
-    userService := services.NewUserService(userRepo)
+    userService := services.NewUserService(userRepo, logService)
     userHandler := http.NewUserHandler(userService)
 
 	// Resource
@@ -72,7 +80,7 @@ func main() {
 
 	// --- Bookings (เพิ่มส่วนนี้) ---
 	bookingRepo := storage.NewBookingRepository(database.DB)
-	bookingService := services.NewBookingService(bookingRepo, settingService, userRepo, notifService)
+	bookingService := services.NewBookingService(bookingRepo, settingService, userRepo, notifService, logService)
 	bookingHandler := http.NewBookingHandler(bookingService)
 
 	// Auth Service

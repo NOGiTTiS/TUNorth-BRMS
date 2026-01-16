@@ -68,13 +68,26 @@ export default function LogsPage() {
   const getActionColor = (action: string) => {
     switch (action.toUpperCase()) {
       case "LOGIN":
+      case "APPROVE":
         return "bg-green-100 text-green-800 hover:bg-green-100";
       case "LOGOUT":
         return "bg-slate-100 text-slate-800 hover:bg-slate-100";
       case "UPLOAD":
+      case "UPDATE":
+      case "UPDATE_USER":
+      case "UPDATE_ROOM":
         return "bg-blue-100 text-blue-800 hover:bg-blue-100";
       case "CREATE":
-        return "bg-tu-pink-light text-tu-pink hover:bg-tu-pink-light";
+      case "CREATE_USER":
+      case "CREATE_ROOM":
+        return "bg-teal-100 text-teal-800 hover:bg-teal-100";
+      case "DELETE_USER":
+      case "DELETE_ROOM":
+      case "rejeCT": // Case insensitive check handled by switch? No, value is UPPERCASE in switch
+      case "REJECT":
+      case "CANCEL":
+      case "DELETE":
+        return "bg-red-100 text-red-800 hover:bg-red-100";
       default:
         return "bg-gray-100 text-gray-800 hover:bg-gray-100";
     }

@@ -203,7 +203,7 @@ export default function CreateBookingPage() {
       if (!res.ok) throw new Error(data.error || "จองห้องไม่สำเร็จ");
 
       toast.success("ส่งคำขอจองสำเร็จ!", {
-        description: "รายการของคุณถูกบันทึกแล้ว รอการอนุมัติ",
+        description: "รายการของคุณถูกบันทึกแล้ว",
       });
 
       setTimeout(() => {
@@ -235,13 +235,6 @@ export default function CreateBookingPage() {
             กรอกรายละเอียดเพื่อขอใช้ห้องประชุมและอุปกรณ์
           </p>
         </div>
-        {/* <Button
-          variant="outline"
-          onClick={() => router.back()}
-          className="rounded-full border-slate-200 text-slate-600 hover:text-tu-pink hover:border-tu-pink/50"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" /> กลับหน้าปฏิทิน
-        </Button> */}
       </div>
 
       <Card className="rounded-3xl shadow-sm border border-slate-100 overflow-hidden">

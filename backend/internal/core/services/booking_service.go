@@ -14,14 +14,16 @@ type bookingService struct {
 	settings ports.SettingService
 	userRepo ports.UserRepository
 	notifier ports.NotificationService
+	logService ports.LogService
 }
 
-func NewBookingService(repo ports.BookingRepository, settings ports.SettingService, userRepo ports.UserRepository, notifier ports.NotificationService) ports.BookingService {
+func NewBookingService(repo ports.BookingRepository, settings ports.SettingService, userRepo ports.UserRepository, notifier ports.NotificationService, logService ports.LogService) ports.BookingService {
 	return &bookingService{
 		repo:     repo,
 		settings: settings,
 		userRepo: userRepo,
 		notifier: notifier,
+		logService: logService,
 	}
 }
 
@@ -94,6 +96,9 @@ func (s *bookingService) CreateBooking(booking *domain.Booking) error {
 	// เรียกแบบ Async (go func) เพื่อไม่ให้ User ต้องรอ
 	go s.notifier.NotifyAdminNewBooking(booking)
 
+	// 6. Log Activity
+	go s.logService.LogAction(booking.UserID, "CREATE", fmt.Sprintf("จองห้อง ID: %d วันที่: %s", booking.RoomID, booking.StartTime.Format("02/01/2006")), "", "")
+
 	return nil
 }
 
@@ -149,6 +154,17 @@ func (s *bookingService) UpdateBookingStatus(id uint, status string, approverID 
 	// 4. Notify User
 	go s.notifier.NotifyUserStatusChange(booking)
 	
+	// 5. Log
+	action := "UPDATE"
+	if status == "approved" {
+		action = "APPROVE"
+	} else if status == "rejected" {
+		action = "REJECT"
+	} else if status == "cancelled" {
+		action = "CANCEL"
+	}
+	go s.logService.LogAction(approverID, action, fmt.Sprintf("%s รายการจอง ID: %d", status, booking.ID), "", "")
+
 	return nil
 }
 
