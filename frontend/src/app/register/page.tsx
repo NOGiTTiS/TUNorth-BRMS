@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -15,12 +15,20 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2, UserPlus, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useSettings } from "@/hooks/useSettings"; // Import useSettings
 import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { get, fetchSettings } = useSettings(); // Use Hook
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Check Setting on Mount
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -93,6 +101,35 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  // Render "Closed" Page if setting is false
+  if (get("enable_register") === "false") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans relative">
+        <Card className="w-full max-w-md shadow-2xl border-none rounded-3xl overflow-hidden z-10 text-center p-8">
+          <div className="flex justify-center mb-6">
+            <div className="bg-slate-100 p-6 rounded-full">
+              <UserPlus size={48} className="text-slate-400" />
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">
+            ปิดรับสมัครสมาชิก
+          </h1>
+          <p className="text-slate-500 mb-8">
+            ขออภัย ระบบปิดรับการลงทะเบียนสมัครสมาชิกใหม่ชั่วคราว
+            <br />
+            กรุณาติดต่อผู้ดูแลระบบหากต้องการบัญชีผู้ใช้งาน
+          </p>
+          <Button
+            onClick={() => router.push("/login")}
+            className="w-full bg-slate-800 hover:bg-slate-900 text-white rounded-full h-12"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" /> กลับไปหน้าเข้าสู่ระบบ
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans relative">

@@ -9,16 +9,23 @@ import (
 )
 
 type AuthHandler struct {
-	service    ports.AuthService
-	logService ports.LogService
+	service        ports.AuthService
+	logService     ports.LogService
+	settingService ports.SettingService
 }
 
-func NewAuthHandler(service ports.AuthService, logService ports.LogService) *AuthHandler {
-	return &AuthHandler{service: service, logService: logService}
+func NewAuthHandler(service ports.AuthService, logService ports.LogService, settingService ports.SettingService) *AuthHandler {
+	return &AuthHandler{service: service, logService: logService, settingService: settingService}
 }
 
 // POST /api/register
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
+	// Check if registration is enabled
+	enableRegister := h.settingService.GetSettingValue("enable_register")
+	if enableRegister == "false" {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Registration is currently disabled"})
+	}
+
 	// 1. สร้าง Struct สำหรับรับข้อมูลการสมัครโดยเฉพาะ (เพื่อให้รับ Password ได้)
 	type RegisterRequest struct {
 		Username   string `json:"username"`

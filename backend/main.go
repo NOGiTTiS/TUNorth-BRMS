@@ -74,7 +74,7 @@ func main() {
 
 	// Auth Service
 	authService := services.NewAuthService(userRepo)
-	authHandler := http.NewAuthHandler(authService, logService)
+	authHandler := http.NewAuthHandler(authService, logService, settingService)
 
 	// Auto-Migrate & Initialize Defaults
 	database.DB.AutoMigrate(&domain.Setting{}, &domain.Booking{}, &domain.Log{})

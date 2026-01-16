@@ -53,6 +53,7 @@ func (s *settingService) InitializeDefaults() error {
 		{SettingName: "site_description", SettingValue: "ระบบจองห้องประชุมออนไลน์", Group: "general", Type: "text", Label: "คำอธิบายระบบ", Description: "คำอธิบายสั้นๆ เกี่ยวกับระบบ"},
 		{SettingName: "copyright_text", SettingValue: "© 2026 Triam Udom Suksa", Group: "general", Type: "text", Label: "ข้อความลิขสิทธิ์", Description: "ข้อความ Footer"},
 		{SettingName: "institute_name", SettingValue: "Triam Udom Suksa", Group: "general", Type: "text", Label: "ชื่อสถาบัน", Description: "ชื่อสถาบันต้นสังกัด"},
+		{SettingName: "enable_register", SettingValue: "true", Group: "general", Type: "boolean", Label: "เปิดรับสมัครสมาชิก", Description: "เปิด/ปิด การลงทะเบียนสมัครสมาชิกใหม่"},
 
 		// Images
 		{SettingName: "site_logo", SettingValue: "", Group: "images", Type: "image", Label: "โลโก้เว็บไซต์", Description: "รูปภาพโลโก้หลัก (PNG/JPG)"},
