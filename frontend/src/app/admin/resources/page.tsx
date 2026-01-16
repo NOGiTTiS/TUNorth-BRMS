@@ -191,7 +191,7 @@ export default function AdminResourcesPage() {
                       {resource.type === "equipment"
                         ? "อุปกรณ์"
                         : resource.type === "catering"
-                        ? "อาหาร/เครื่องดื่ม"
+                        ? "บริการ"
                         : resource.type}
                     </span>
                   </TableCell>
@@ -266,9 +266,7 @@ export default function AdminResourcesPage() {
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   <SelectItem value="equipment">อุปกรณ์ (Equipment)</SelectItem>
-                  <SelectItem value="catering">
-                    อาหาร/เครื่องดื่ม (Catering)
-                  </SelectItem>
+                  <SelectItem value="catering">บริการ (Service)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
