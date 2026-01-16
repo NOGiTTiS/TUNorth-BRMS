@@ -36,9 +36,14 @@ func main() {
 	roomService := services.NewRoomService(roomRepo)
 	roomHandler := http.NewRoomHandler(roomService)
 
+	// Settings (Admin) - Move up because injection is needed
+	settingRepo := storage.NewSettingRepository(database.DB)
+	settingService := services.NewSettingService(settingRepo)
+	settingHandler := http.NewSettingHandler(settingService)
+
 	// --- Bookings (เพิ่มส่วนนี้) ---
 	bookingRepo := storage.NewBookingRepository(database.DB)
-	bookingService := services.NewBookingService(bookingRepo)
+	bookingService := services.NewBookingService(bookingRepo, settingService)
 	bookingHandler := http.NewBookingHandler(bookingService)
 
 	// Auth (เพิ่มใหม่)
@@ -55,10 +60,7 @@ func main() {
     resService := services.NewResourceService(resRepo)
     resHandler := http.NewResourceHandler(resService)
 
-	// Settings (Admin)
-	settingRepo := storage.NewSettingRepository(database.DB)
-	settingService := services.NewSettingService(settingRepo)
-	settingHandler := http.NewSettingHandler(settingService)
+
 
 	// Auto-Migrate & Initialize Defaults
 	database.DB.AutoMigrate(&domain.Setting{})

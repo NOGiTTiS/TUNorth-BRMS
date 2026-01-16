@@ -8,11 +8,15 @@ import (
 )
 
 type bookingService struct {
-	repo ports.BookingRepository
+	repo     ports.BookingRepository
+	settings ports.SettingService
 }
 
-func NewBookingService(repo ports.BookingRepository) ports.BookingService {
-	return &bookingService{repo: repo}
+func NewBookingService(repo ports.BookingRepository, settings ports.SettingService) ports.BookingService {
+	return &bookingService{
+		repo:     repo,
+		settings: settings,
+	}
 }
 
 func (s *bookingService) CreateBooking(booking *domain.Booking) error {
@@ -34,8 +38,12 @@ func (s *bookingService) CreateBooking(booking *domain.Booking) error {
 	}
 
 	// 3. กำหนดสถานะเริ่มต้น
-	booking.Status = "pending" // หรือ active เลยก็ได้ถ้าไม่ต้องรออนุมัติ
-	
+	defaultStatus := s.settings.GetSettingValue("default_booking_status")
+	if defaultStatus == "" {
+		defaultStatus = "pending"
+	}
+	booking.Status = defaultStatus
+
 	// 4. บันทึก
 	return s.repo.Create(booking)
 }

@@ -53,6 +53,11 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
   if (isAuthenticated) {
     menuItems.push(
       {
+        name: "จองห้องประชุม",
+        href: "/booking/create",
+        icon: Box,
+      },
+      {
         name: "การจองของฉัน",
         href: "/my-bookings",
         icon: ListTodo,
