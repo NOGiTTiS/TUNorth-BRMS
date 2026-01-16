@@ -106,11 +106,11 @@ export default function LoginPage() {
                 htmlFor="username"
                 className="text-slate-700 font-medium ml-1"
               >
-                ชื่อผู้ใช้งาน
+                ชื่อผู้ใช้งาน หรือ อีเมล
               </Label>
               <Input
                 id="username"
-                placeholder="กรอกชื่อผู้ใช้งานของคุณ"
+                placeholder="กรอกชื่อผู้ใช้งาน หรือ อีเมลของคุณ"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required

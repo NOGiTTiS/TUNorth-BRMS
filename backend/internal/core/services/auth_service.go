@@ -38,12 +38,12 @@ func (s *authService) Register(user *domain.User) error {
 	return s.userRepo.Create(user)
 }
 
-// Login: ตรวจสอบรหัสและออก Token
-func (s *authService) Login(username, password string) (string, uint, error) {
-	// 1. หา User
-	user, err := s.userRepo.GetByUsername(username)
+// Login: ตรวจสอบรหัสและออก Token (รองรับ Username หรือ Email)
+func (s *authService) Login(identifier, password string) (string, uint, error) {
+	// 1. หา User (By Username or Email)
+	user, err := s.userRepo.GetByUsernameOrEmail(identifier)
 	if err != nil {
-		return "", 0, errors.New("invalid username or password")
+		return "", 0, errors.New("invalid username/email or password")
 	}
 
 	// 2. ตรวจสอบรหัสผ่าน (Hash vs Plain)

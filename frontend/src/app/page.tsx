@@ -14,6 +14,7 @@ import { Booking } from "@/types/booking";
 import BookingDetailModal from "@/components/BookingDetailModal";
 import PopupModal from "@/components/PopupModal";
 import { useAuthStore } from "@/store/authStore";
+import { useSettings } from "@/hooks/useSettings";
 import { UserCircle, CalendarDays, Plus } from "lucide-react";
 
 export default function Home() {
@@ -21,6 +22,12 @@ export default function Home() {
 
   // 1. เรียกใช้ Store เพื่อดูสถานะ Login
   const { isAuthenticated, user } = useAuthStore();
+  const { fetchSettings, get } = useSettings(); // Use Hook
+
+  // Fetch settings on mount
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
   // 2. State ต่างๆ
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -198,8 +205,11 @@ export default function Home() {
             color: #334155 !important;
           }
           .fc-button-active {
-            background-color: #f472b6 !important; /* tu-pink */
-            border-color: #f472b6 !important;
+            background-color: ${get(
+              "theme_color",
+              "#f472b6"
+            )} !important; /* Dynamic Color */
+            border-color: ${get("theme_color", "#f472b6")} !important;
             color: white !important;
           }
           .fc-col-header-cell-cushion {

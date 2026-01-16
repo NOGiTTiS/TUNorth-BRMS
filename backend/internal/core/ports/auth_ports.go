@@ -5,6 +5,7 @@ import "tunorth-brms-backend/internal/core/domain"
 type UserRepository interface {
 	Create(user *domain.User) error
 	GetByUsername(username string) (*domain.User, error)
+	GetByUsernameOrEmail(identifier string) (*domain.User, error) // Added
 	GetByID(id uint) (*domain.User, error)
 	GetAll() ([]domain.User, error)
 	Update(user *domain.User) error
@@ -13,7 +14,7 @@ type UserRepository interface {
 
 type AuthService interface {
 	Register(user *domain.User) error
-	Login(username, password string) (string, uint, error)
+	Login(identifier, password string) (string, uint, error)
 	GetMe(userID uint) (*domain.User, error)
 	UpdateMe(userID uint, user *domain.User) error
 }
@@ -23,7 +24,7 @@ type UserService interface {
 	GetAllUsers() ([]domain.User, error)
 	UpdateUser(id uint, user *domain.User) error
 	DeleteUser(id uint) error
-	
+
 	// ✅ เพิ่มบรรทัดนี้ลงไปครับ
-	CreateUser(user *domain.User) error 
+	CreateUser(user *domain.User) error
 }
