@@ -26,6 +26,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { Download } from "lucide-react";
+import { API_URL } from "@/config";
 
 interface ReportStats {
   total_bookings: number;
@@ -77,9 +78,7 @@ export default function ReportPage() {
         end: endDate,
         status: status === "all" ? "" : status,
       });
-      const res = await fetch(
-        `http://localhost:8080/api/reports/dashboard?${query}`
-      );
+      const res = await fetch(`${API_URL}/api/reports/dashboard?${query}`);
       if (res.ok) {
         const data = await res.json();
         setStats(data);

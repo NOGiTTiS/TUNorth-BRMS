@@ -60,20 +60,18 @@ export default function AdminUsersPage() {
   // 1. Fetch Users
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/users", {
+      const res = await fetch(`${API_URL}/api/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        const data = await res.json();
-        // Sort by latest ID
-        setUsers(data.sort((a: User, b: User) => b.id - a.id));
+        setUsers(await res.json());
       }
-    } catch (error) {
-      console.error("Failed to fetch users");
-    } finally {
-      setLoading(false);
+    } catch (e) {
+      console.error(e);
     }
   };
+
+  // ... (rest of code) ...
 
   useEffect(() => {
     if (!isAuthenticated || currentUser?.role !== "admin") {
@@ -104,22 +102,19 @@ export default function AdminUsersPage() {
     try {
       if (editingUser) {
         // Update Mode
-        const res = await fetch(
-          `http://localhost:8080/api/users/${editingUser.id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(formData),
-          }
-        );
+        const res = await fetch(`${API_URL}/api/users/${editingUser.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        });
         if (!res.ok) throw new Error("Failed to update");
         toast.success("แก้ไขข้อมูลผู้ใช้สำเร็จ");
       } else {
         // Create Mode
-        const res = await fetch("http://localhost:8080/api/users", {
+        const res = await fetch(`${API_URL}/api/users`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -150,7 +145,7 @@ export default function AdminUsersPage() {
       return;
 
     try {
-      const res = await fetch(`http://localhost:8080/api/users/${id}`, {
+      const res = await fetch(`${API_URL}/api/users/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -172,7 +167,7 @@ export default function AdminUsersPage() {
     formDataUpload.append("file", importFile);
 
     try {
-      const res = await fetch("http://localhost:8080/api/users/import", {
+      const res = await fetch(`${API_URL}/api/users/import`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formDataUpload,

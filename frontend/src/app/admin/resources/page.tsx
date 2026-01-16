@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Trash2, Edit, Plus, Box } from "lucide-react";
+import { API_URL } from "@/config";
 
 export default function AdminResourcesPage() {
   const router = useRouter();
@@ -52,7 +53,7 @@ export default function AdminResourcesPage() {
 
   const fetchResources = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/resources");
+      const res = await fetch(`${API_URL}/api/resources`);
       if (res.ok) {
         const data = await res.json();
         setResources(data.sort((a: Resource, b: Resource) => a.id - b.id));
@@ -90,11 +91,11 @@ export default function AdminResourcesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      let url = "http://localhost:8080/api/resources";
+      let url = `${API_URL}/api/resources`;
       let method = "POST";
 
       if (editingResource) {
-        url = `http://localhost:8080/api/resources/${editingResource.id}`;
+        url = `${API_URL}/api/resources/${editingResource.id}`;
         method = "PUT";
       }
 
@@ -120,7 +121,7 @@ export default function AdminResourcesPage() {
   const handleDelete = async (id: number) => {
     if (!confirm("ยืนยันการลบอุปกรณ์นี้?")) return;
     try {
-      const res = await fetch(`http://localhost:8080/api/resources/${id}`, {
+      const res = await fetch(`${API_URL}/api/resources/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CalendarClock, Trash2 } from "lucide-react";
+import { API_URL } from "@/config";
 
 export default function MyBookingsPage() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function MyBookingsPage() {
     const fetchMyBookings = async () => {
       try {
         const res = await fetch(
-          `http://localhost:8080/api/bookings?user_id=${user.user_id}`,
+          `${API_URL}/api/bookings?user_id=${user.user_id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -164,7 +165,7 @@ export default function MyBookingsPage() {
                             return;
                           try {
                             const res = await fetch(
-                              `http://localhost:8080/api/bookings/${booking.id}`,
+                              `${API_URL}/api/bookings/${booking.id}`,
                               {
                                 method: "DELETE",
                                 headers: { Authorization: `Bearer ${token}` },

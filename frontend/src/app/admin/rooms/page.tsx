@@ -34,6 +34,8 @@ import {
 import { toast } from "sonner";
 import { Trash2, Edit, Plus, DoorOpen } from "lucide-react";
 
+import { API_URL } from "@/config";
+
 export default function AdminRoomsPage() {
   const router = useRouter();
   const { user, token, isAuthenticated } = useAuthStore();
@@ -56,7 +58,7 @@ export default function AdminRoomsPage() {
   // 1. Fetch Rooms
   const fetchRooms = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/rooms");
+      const res = await fetch(`${API_URL}/api/rooms`);
       if (res.ok) {
         const data = await res.json();
         // เรียงตาม ID
@@ -120,11 +122,11 @@ export default function AdminRoomsPage() {
     };
 
     try {
-      let url = "http://localhost:8080/api/rooms";
+      let url = `${API_URL}/api/rooms`;
       let method = "POST";
 
       if (editingRoom) {
-        url = `http://localhost:8080/api/rooms/${editingRoom.id}`;
+        url = `${API_URL}/api/rooms/${editingRoom.id}`;
         method = "PUT";
       }
 
@@ -155,7 +157,7 @@ export default function AdminRoomsPage() {
       return;
 
     try {
-      const res = await fetch(`http://localhost:8080/api/rooms/${id}`, {
+      const res = await fetch(`${API_URL}/api/rooms/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

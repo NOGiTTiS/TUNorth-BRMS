@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search } from "lucide-react";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
+import { API_URL } from "@/config";
 
 interface Log {
   ID: number;
@@ -49,7 +50,7 @@ export default function LogsPage() {
   const fetchLogs = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:8080/api/logs");
+      const res = await fetch(`${API_URL}/api/logs`);
       if (res.ok) {
         const data = await res.json();
         setLogs(data);

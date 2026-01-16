@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { API_URL } from "@/config";
 
 // Types
 interface SettingItem {
@@ -93,7 +94,7 @@ export default function AdminSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/settings", {
+      const res = await fetch(`${API_URL}/api/settings`, {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
       });
@@ -124,7 +125,7 @@ export default function AdminSettingsPage() {
 
     try {
       toast.loading("กำลังอัปโหลดรูปภาพ...");
-      const res = await fetch("http://localhost:8080/api/settings/upload", {
+      const res = await fetch(`${API_URL}/api/settings/upload`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -155,7 +156,7 @@ export default function AdminSettingsPage() {
         setting_value: s.setting_value,
       }));
 
-      const res = await fetch("http://localhost:8080/api/settings", {
+      const res = await fetch(`${API_URL}/api/settings`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -16,6 +16,7 @@ import PopupModal from "@/components/PopupModal";
 import { useAuthStore } from "@/store/authStore";
 import { useSettings } from "@/hooks/useSettings";
 import { UserCircle, CalendarDays, Plus } from "lucide-react";
+import { API_URL } from "@/config";
 
 export default function Home() {
   const router = useRouter();
@@ -43,7 +44,7 @@ export default function Home() {
     // ดึงข้อมูลห้องมาแสดงเป็น Legend
     const fetchRooms = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/rooms");
+        const res = await fetch(`${API_URL}/api/rooms`);
         if (res.ok) {
           const data = await res.json();
           setRooms(data);
@@ -67,7 +68,7 @@ export default function Home() {
       const end = encodeURIComponent(info.endStr);
 
       const res = await fetch(
-        `http://localhost:8080/api/bookings?start=${start}&end=${end}&status=approved`
+        `${API_URL}/api/bookings?start=${start}&end=${end}&status=approved`
       );
 
       if (!res.ok) {

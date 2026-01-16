@@ -20,6 +20,7 @@ import {
   CalendarCheck,
   CheckCircle,
 } from "lucide-react";
+import { API_URL } from "@/config";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -62,9 +63,9 @@ export default function AdminDashboard() {
     const loadStats = async () => {
       // Parallel Fetch
       const [bookings, rooms, users] = await Promise.all([
-        fetchCount("http://localhost:8080/api/bookings"),
-        fetchCount("http://localhost:8080/api/rooms"),
-        fetchCount("http://localhost:8080/api/users"),
+        fetchCount(`${API_URL}/api/bookings`),
+        fetchCount(`${API_URL}/api/rooms`),
+        fetchCount(`${API_URL}/api/users`),
       ]);
 
       // Calculate Stats

@@ -20,6 +20,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, ArrowLeft, CalendarPlus } from "lucide-react";
 import { toast } from "sonner";
+import { API_URL } from "@/config";
 
 export default function CreateBookingPage() {
   const router = useRouter();
@@ -70,16 +71,14 @@ export default function CreateBookingPage() {
     const fetchData = async () => {
       try {
         // Fetch Rooms (Only active ones)
-        const roomsRes = await fetch(
-          "http://localhost:8080/api/rooms?status=active"
-        );
+        const roomsRes = await fetch(`${API_URL}/api/rooms?status=active`);
         if (roomsRes.ok) {
           const roomsData = await roomsRes.json();
           setRooms(roomsData);
         }
 
         // Fetch Resources
-        const resRes = await fetch("http://localhost:8080/api/resources");
+        const resRes = await fetch(`${API_URL}/api/resources`);
         if (resRes.ok) {
           const resData = await resRes.json();
           setResourceOptions(resData);
@@ -196,7 +195,7 @@ export default function CreateBookingPage() {
       }
 
       // 3. ส่งไปยัง Backend
-      const res = await fetch("http://localhost:8080/api/bookings", {
+      const res = await fetch(`${API_URL}/api/bookings`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

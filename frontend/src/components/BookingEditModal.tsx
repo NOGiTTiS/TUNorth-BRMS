@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { API_URL } from "@/config";
 import { Booking } from "@/types/booking";
 import { Room } from "@/types/room";
 import { useAuthStore } from "@/store/authStore";
@@ -59,12 +60,12 @@ export default function BookingEditModal({
     if (isOpen) {
       const fetchRooms = async () => {
         try {
-          const res = await fetch("http://localhost:8080/api/rooms");
+          const res = await fetch(`${API_URL}/api/rooms`);
           if (res.ok) {
             setRooms(await res.json());
           }
         } catch (e) {
-          console.error(e);
+          console.error("Failed to load rooms", e);
         }
       };
       fetchRooms();
@@ -120,17 +121,14 @@ export default function BookingEditModal({
         note: formData.note,
       };
 
-      const res = await fetch(
-        `http://localhost:8080/api/bookings/${booking.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await fetch(`${API_URL}/api/bookings/${booking.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!res.ok) throw new Error("Correction failed");
 

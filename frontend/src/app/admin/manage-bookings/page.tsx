@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Check, X, Eye, CalendarCheck, Pencil, Trash2 } from "lucide-react";
 import BookingDetailModal from "@/components/BookingDetailModal";
 import BookingEditModal from "@/components/BookingEditModal";
+import { API_URL } from "@/config";
 
 export default function ManageBookingsPage() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function ManageBookingsPage() {
 
   const fetchBookings = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/bookings", {
+      const res = await fetch(`${API_URL}/api/bookings`, {
         cache: "no-store",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -63,17 +64,14 @@ export default function ManageBookingsPage() {
 
   const handleUpdateStatus = async (id: number, newStatus: string) => {
     try {
-      const res = await fetch(
-        `http://localhost:8080/api/bookings/${id}/status`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
+      const res = await fetch(`${API_URL}/api/bookings/${id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
 
       if (!res.ok) throw new Error("Update failed");
 
@@ -101,7 +99,7 @@ export default function ManageBookingsPage() {
   const handleDelete = async (id: number) => {
     if (!confirm("คุณต้องการลบการจองนี้อย่างถาวรหรือไม่?")) return;
     try {
-      const res = await fetch(`http://localhost:8080/api/bookings/${id}`, {
+      const res = await fetch(`${API_URL}/api/bookings/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

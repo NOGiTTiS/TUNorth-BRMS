@@ -17,6 +17,7 @@ import { AlertCircle, Loader2, UserPlus, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useSettings } from "@/hooks/useSettings"; // Import useSettings
 import { toast } from "sonner";
+import { API_URL } from "@/config";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -74,7 +75,7 @@ export default function RegisterPage() {
         role: "user", // สมัครเองให้เป็น user เสมอ
       };
 
-      const res = await fetch("http://localhost:8080/api/register", {
+      const res = await fetch(`${API_URL}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

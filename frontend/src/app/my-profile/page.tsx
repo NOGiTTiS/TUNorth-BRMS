@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { User, Mail, Phone, Lock, Building, Save } from "lucide-react";
+import { API_URL } from "@/config";
 
 export default function MyProfilePage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function MyProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/me", {
+      const res = await fetch(`${API_URL}/api/me`, {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
       });
@@ -85,7 +86,7 @@ export default function MyProfilePage() {
         password: formData.password || undefined, // Send only if set
       };
 
-      const res = await fetch("http://localhost:8080/api/me", {
+      const res = await fetch(`${API_URL}/api/me`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

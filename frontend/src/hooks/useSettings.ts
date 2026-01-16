@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { API_URL } from "@/config";
 
 interface SettingsState {
   settings: Record<string, string>;
@@ -16,7 +17,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
         // Or fetch protected if admin logged in? 
         // For general UI (Logo/Name), we might need a public endpoint. 
         // I implemented /api/settings/public for this.
-      const res = await fetch('http://localhost:8080/api/settings/public');
+      const res = await fetch(`${API_URL}/api/settings/public`);
       if (res.ok) {
         const data = await res.json();
         set({ settings: data, isLoading: false });

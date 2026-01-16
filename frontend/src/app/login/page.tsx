@@ -17,6 +17,7 @@ import { AlertCircle, Loader2, LogIn } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useSettings } from "@/hooks/useSettings"; // Import
 import Link from "next/link";
+import { API_URL } from "@/config";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8080/api/login", {
+      const res = await fetch(`${API_URL}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
