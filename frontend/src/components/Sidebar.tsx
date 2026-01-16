@@ -19,6 +19,7 @@ import {
   Shield,
   ChevronDown,
   BarChart3,
+  FileText,
 } from "lucide-react";
 
 import { useState } from "react"; // needed for state
@@ -72,7 +73,7 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
         name: "ข้อมูลส่วนตัว",
         href: "/my-profile",
         icon: User,
-      },
+      }
     );
 
     if (user?.role === "admin") {
@@ -91,6 +92,7 @@ export default function Sidebar({ isMobile = false, onClose }: SidebarProps) {
           { name: "จัดการอุปกรณ์", href: "/admin/resources", icon: Box },
           { name: "ตั้งค่าระบบ", href: "/admin/settings", icon: Settings },
           { name: "รายงาน", href: "/admin/report", icon: BarChart3 },
+          { name: "บันทึกกิจกรรม", href: "/admin/logs", icon: FileText }, // Need import FileText
         ],
       });
     }

@@ -39,17 +39,17 @@ func (s *authService) Register(user *domain.User) error {
 }
 
 // Login: ตรวจสอบรหัสและออก Token
-func (s *authService) Login(username, password string) (string, error) {
+func (s *authService) Login(username, password string) (string, uint, error) {
 	// 1. หา User
 	user, err := s.userRepo.GetByUsername(username)
 	if err != nil {
-		return "", errors.New("invalid username or password")
+		return "", 0, errors.New("invalid username or password")
 	}
 
 	// 2. ตรวจสอบรหัสผ่าน (Hash vs Plain)
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return "", errors.New("invalid username or password")
+		return "", 0, errors.New("invalid username or password")
 	}
 
 	// 3. สร้าง JWT Token
@@ -63,10 +63,10 @@ func (s *authService) Login(username, password string) (string, error) {
 	// เซ็นลายเซ็นด้วย Secret Key (จาก .env)
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 
-	return tokenString, nil
+	return tokenString, user.ID, nil
 }
 
 func (s *authService) GetMe(userID uint) (*domain.User, error) {

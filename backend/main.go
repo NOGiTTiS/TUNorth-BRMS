@@ -44,17 +44,7 @@ func main() {
 	// Auth (Move up for injection)
 	userRepo := storage.NewUserRepository(database.DB)
 
-	// Notification
-	notifService := services.NewNotificationService(settingService, roomRepo, userRepo)
 
-	// --- Bookings (เพิ่มส่วนนี้) ---
-	bookingRepo := storage.NewBookingRepository(database.DB)
-	bookingService := services.NewBookingService(bookingRepo, settingService, userRepo, notifService)
-	bookingHandler := http.NewBookingHandler(bookingService)
-
-	// Auth Service
-	authService := services.NewAuthService(userRepo)
-	authHandler := http.NewAuthHandler(authService)
 
 	// User Management
     userService := services.NewUserService(userRepo)
@@ -72,8 +62,25 @@ func main() {
 
 
 
+	// Log Module
+	logRepo := storage.NewLogRepository(database.DB)
+	logService := services.NewLogService(logRepo)
+	logHandler := http.NewLogHandler(logService)
+
+	// Notification
+	notifService := services.NewNotificationService(settingService, roomRepo, userRepo)
+
+	// --- Bookings (เพิ่มส่วนนี้) ---
+	bookingRepo := storage.NewBookingRepository(database.DB)
+	bookingService := services.NewBookingService(bookingRepo, settingService, userRepo, notifService)
+	bookingHandler := http.NewBookingHandler(bookingService)
+
+	// Auth Service
+	authService := services.NewAuthService(userRepo)
+	authHandler := http.NewAuthHandler(authService, logService)
+
 	// Auto-Migrate & Initialize Defaults
-	database.DB.AutoMigrate(&domain.Setting{}, &domain.Booking{})
+	database.DB.AutoMigrate(&domain.Setting{}, &domain.Booking{}, &domain.Log{})
 	settingService.InitializeDefaults()
 
 	// 4. Setup Fiber App
@@ -149,6 +156,11 @@ func main() {
 
 	// Report Routes
 	api.Get("/reports/dashboard", reportHandler.GetDashboardStats)
+
+	// Log Routes
+	api.Get("/logs", logHandler.GetLogs)
+	api.Post("/logs/test", logHandler.CreateTestLog) // For Testing
+
 
 	// Test Route
 	app.Get("/", func(c *fiber.Ctx) error {

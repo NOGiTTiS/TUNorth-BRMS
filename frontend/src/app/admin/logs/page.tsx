@@ -1,0 +1,193 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/authStore";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Search } from "lucide-react";
+import { format } from "date-fns";
+import { th } from "date-fns/locale";
+
+interface Log {
+  ID: number;
+  user_id: number;
+  user?: {
+    username: string;
+    role: string;
+  };
+  action: string;
+  description: string;
+  ip_address: string;
+  created_at: string;
+}
+
+export default function LogsPage() {
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuthStore();
+  const [logs, setLogs] = useState<Log[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    if (!isAuthenticated || user?.role !== "admin") {
+      router.push("/");
+    }
+  }, [isAuthenticated, user, router]);
+
+  const fetchLogs = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("http://localhost:8080/api/logs");
+      if (res.ok) {
+        const data = await res.json();
+        setLogs(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch logs:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, []);
+
+  const getActionColor = (action: string) => {
+    switch (action.toUpperCase()) {
+      case "LOGIN":
+        return "bg-green-100 text-green-800 hover:bg-green-100";
+      case "LOGOUT":
+        return "bg-slate-100 text-slate-800 hover:bg-slate-100";
+      case "UPLOAD":
+        return "bg-blue-100 text-blue-800 hover:bg-blue-100";
+      case "CREATE":
+        return "bg-tu-pink-light text-tu-pink hover:bg-tu-pink-light";
+      default:
+        return "bg-gray-100 text-gray-800 hover:bg-gray-100";
+    }
+  };
+
+  const filteredLogs = logs.filter(
+    (log) =>
+      log.user?.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="p-6 md:p-8 space-y-6 bg-slate-50 min-h-screen">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <h1 className="text-2xl font-bold text-slate-800">
+          รายการบันทึก (Logs List)
+        </h1>
+      </div>
+
+      <Card className="rounded-2xl border-slate-200 shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <div className="flex items-center gap-2 w-full md:w-1/2">
+            <Input
+              placeholder="ค้นหาชื่อ, กิจกรรม, หรือรายละเอียด..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="rounded-xl"
+            />
+            <Button className="bg-tu-pink hover:bg-tu-pink-hover text-white rounded-xl">
+              <Search className="w-4 h-4 mr-2" />
+              ค้นหา
+            </Button>
+          </div>
+          <div className="text-sm text-slate-500">แสดง 100 รายการล่าสุด</div>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader className="bg-slate-50">
+                <TableRow>
+                  <TableHead className="w-[180px]">เวลา (TIME)</TableHead>
+                  <TableHead>ผู้ใช้งาน (USER)</TableHead>
+                  <TableHead>กิจกรรม (ACTION)</TableHead>
+                  <TableHead>รายละเอียด (DETAIL)</TableHead>
+                  <TableHead className="text-right">IP ADDRESS</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-10 text-slate-500"
+                    >
+                      กำลังโหลดข้อมูล...
+                    </TableCell>
+                  </TableRow>
+                ) : filteredLogs.length > 0 ? (
+                  filteredLogs.map((log) => (
+                    <TableRow key={log.ID}>
+                      <TableCell className="text-slate-500 font-mono text-xs">
+                        {format(
+                          new Date(log.created_at),
+                          "dd/MM/yyyy HH:mm:ss"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
+                            {log.user?.username?.substring(0, 1).toUpperCase()}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-medium text-slate-700">
+                              {log.user?.username || "Unknown"}
+                            </span>
+                            <span className="text-xs text-slate-400 capitalize">
+                              {log.user?.role || "-"}
+                            </span>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={`rounded-md pointer-events-none ${getActionColor(
+                            log.action
+                          )}`}
+                        >
+                          {log.action.toUpperCase()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-slate-600 text-sm">
+                        {log.description}
+                      </TableCell>
+                      <TableCell className="text-right text-slate-400 font-mono text-xs">
+                        {log.ip_address}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-10 text-slate-500"
+                    >
+                      ไม่พบข้อมูล
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

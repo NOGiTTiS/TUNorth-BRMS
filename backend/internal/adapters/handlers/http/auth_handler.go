@@ -9,11 +9,12 @@ import (
 )
 
 type AuthHandler struct {
-	service ports.AuthService
+	service    ports.AuthService
+	logService ports.LogService
 }
 
-func NewAuthHandler(service ports.AuthService) *AuthHandler {
-	return &AuthHandler{service: service}
+func NewAuthHandler(service ports.AuthService, logService ports.LogService) *AuthHandler {
+	return &AuthHandler{service: service, logService: logService}
 }
 
 // POST /api/register
@@ -66,10 +67,13 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input"})
 	}
 
-	token, err := h.service.Login(input.Username, input.Password)
+	token, userID, err := h.service.Login(input.Username, input.Password)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
 	}
+
+	// Log Action
+	go h.logService.LogAction(userID, "LOGIN", "เข้าสู่ระบบสำเร็จ", c.IP(), c.Get("User-Agent"))
 
 	return c.JSON(fiber.Map{
 		"message": "Login successful",
