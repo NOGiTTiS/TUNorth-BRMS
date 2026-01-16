@@ -32,6 +32,19 @@ func (h *BookingHandler) GetBookings(c *fiber.Ctx) error {
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 		}
+
+		// Filter by status if provided (e.g. ?status=approved)
+		statusFilter := c.Query("status")
+		if statusFilter != "" {
+			var filtered []domain.Booking
+			for _, b := range bookings {
+				if b.Status == statusFilter {
+					filtered = append(filtered, b)
+				}
+			}
+			return c.JSON(filtered)
+		}
+
 		return c.JSON(bookings)
 	}
 
@@ -61,6 +74,18 @@ func (h *BookingHandler) GetBookings(c *fiber.Ctx) error {
 	}
 
 	// 4. กรณี Admin หรือไม่ส่งอะไรมาเลย -> คืนค่าทั้งหมด
+	// Filter by status if provided
+    statusFilter := c.Query("status")
+	if statusFilter != "" {
+		var filtered []domain.Booking
+		for _, b := range bookings {
+			if b.Status == statusFilter {
+				filtered = append(filtered, b)
+			}
+		}
+		return c.JSON(filtered)
+	}
+
 	return c.JSON(bookings)
 }
 

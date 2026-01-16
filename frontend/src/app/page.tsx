@@ -67,7 +67,7 @@ export default function Home() {
       const end = encodeURIComponent(info.endStr);
 
       const res = await fetch(
-        `http://localhost:8080/api/bookings?start=${start}&end=${end}`
+        `http://localhost:8080/api/bookings?start=${start}&end=${end}&status=approved`
       );
 
       if (!res.ok) {
