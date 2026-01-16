@@ -44,9 +44,12 @@ func main() {
 	// Auth (Move up for injection)
 	userRepo := storage.NewUserRepository(database.DB)
 
+	// Notification
+	notifService := services.NewNotificationService(settingService, roomRepo, userRepo)
+
 	// --- Bookings (เพิ่มส่วนนี้) ---
 	bookingRepo := storage.NewBookingRepository(database.DB)
-	bookingService := services.NewBookingService(bookingRepo, settingService, userRepo)
+	bookingService := services.NewBookingService(bookingRepo, settingService, userRepo, notifService)
 	bookingHandler := http.NewBookingHandler(bookingService)
 
 	// Auth Service

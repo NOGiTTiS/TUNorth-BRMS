@@ -13,13 +13,15 @@ type bookingService struct {
 	repo     ports.BookingRepository
 	settings ports.SettingService
 	userRepo ports.UserRepository
+	notifier ports.NotificationService
 }
 
-func NewBookingService(repo ports.BookingRepository, settings ports.SettingService, userRepo ports.UserRepository) ports.BookingService {
+func NewBookingService(repo ports.BookingRepository, settings ports.SettingService, userRepo ports.UserRepository, notifier ports.NotificationService) ports.BookingService {
 	return &bookingService{
 		repo:     repo,
 		settings: settings,
 		userRepo: userRepo,
+		notifier: notifier,
 	}
 }
 
@@ -84,7 +86,15 @@ func (s *bookingService) CreateBooking(booking *domain.Booking) error {
 	booking.Status = defaultStatus
 
 	// 4. บันทึก
-	return s.repo.Create(booking)
+	if err := s.repo.Create(booking); err != nil {
+		return err
+	}
+
+	// 5. Notify Admin
+	// เรียกแบบ Async (go func) เพื่อไม่ให้ User ต้องรอ
+	go s.notifier.NotifyAdminNewBooking(booking)
+
+	return nil
 }
 
 func (s *bookingService) GetAllBookings() ([]domain.Booking, error) {
@@ -132,7 +142,14 @@ func (s *bookingService) UpdateBookingStatus(id uint, status string, approverID 
 	booking.ApproverID = &approverID // บันทึกว่าใครเป็นคนกดอนุมัติ
 	
 	// 3. บันทึก
-	return s.repo.Update(booking)
+	if err := s.repo.Update(booking); err != nil {
+		return err
+	}
+	
+	// 4. Notify User
+	go s.notifier.NotifyUserStatusChange(booking)
+	
+	return nil
 }
 
 func (s *bookingService) UpdateBooking(id uint, updatedBooking *domain.Booking) error {
