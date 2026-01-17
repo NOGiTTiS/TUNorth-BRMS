@@ -28,6 +28,7 @@ func main() {
 		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_NAME"),
 		os.Getenv("DB_PORT"),
+		os.Getenv("DB_SSL"),
 	)
 
 	// 3. Dependency Injection (ต่อท่อส่งข้อมูล)
