@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	"tunorth-brms-backend/internal/adapters/storage"
 	"tunorth-brms-backend/internal/core/domain"
 	"tunorth-brms-backend/internal/core/ports"
 
@@ -12,11 +13,12 @@ import (
 )
 
 type BookingHandler struct {
-	service ports.BookingService
+	service        ports.BookingService
+	settingService ports.SettingService
 }
 
-func NewBookingHandler(service ports.BookingService) *BookingHandler {
-	return &BookingHandler{service: service}
+func NewBookingHandler(service ports.BookingService, settingService ports.SettingService) *BookingHandler {
+	return &BookingHandler{service: service, settingService: settingService}
 }
 
 // [GET] /api/bookings?start=...&end=...
@@ -125,18 +127,41 @@ func (h *BookingHandler) CreateBooking(c *fiber.Ctx) error {
 	// 2. จัดการไฟล์อัปโหลด (Layout Image)
 	file, err := c.FormFile("layout_image")
 	if err == nil {
-		// ถ้ามีการส่งไฟล์มา
-		// ตั้งชื่อไฟล์ใหม่กันซ้ำ (เช่น booking_timestamp.jpg)
-		filename := fmt.Sprintf("booking_%d_%s", time.Now().Unix(), file.Filename)
-		path := fmt.Sprintf("./uploads/%s", filename)
+		// Retrieve Cloudinary Settings
+		cloudName := h.settingService.GetSettingValue("cloudinary_cloud_name")
+		apiKey := h.settingService.GetSettingValue("cloudinary_api_key")
+		apiSecret := h.settingService.GetSettingValue("cloudinary_api_secret")
 
-		// บันทึกลงเครื่อง
-		if err := c.SaveFile(file, path); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to save file"})
+		// Check if Cloudinary is configured
+		if cloudName != "" && apiKey != "" && apiSecret != "" {
+			adapter, err := storage.NewCloudinaryAdapter(cloudName, apiKey, apiSecret)
+			if err == nil {
+				// Upload to Cloudinary
+				url, err := adapter.Upload(file, fmt.Sprintf("booking_%d", time.Now().UnixNano()))
+				if err == nil {
+					booking.LayoutImage = url
+				} else {
+					// Join error if upload fails, or fallback? For safety let's return error
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Cloudinary Upload Failed: " + err.Error()})
+				}
+			} else {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to init Cloudinary: " + err.Error()})
+			}
+		} else {
+			// Fallback: Local Storage
+			// ถ้ามีการส่งไฟล์มา
+			// ตั้งชื่อไฟล์ใหม่กันซ้ำ (เช่น booking_timestamp.jpg)
+			filename := fmt.Sprintf("booking_%d_%s", time.Now().Unix(), file.Filename)
+			path := fmt.Sprintf("./uploads/%s", filename)
+
+			// บันทึกลงเครื่อง
+			if err := c.SaveFile(file, path); err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to save file"})
+			}
+
+			// บันทึก Path ลง DB (เพื่อให้ Frontend เรียกใช้ได้)
+			booking.LayoutImage = "/uploads/" + filename
 		}
-
-		// บันทึก Path ลง DB (เพื่อให้ Frontend เรียกใช้ได้)
-		booking.LayoutImage = "/uploads/" + filename
 	}
 
 	// 3. เรียก Service บันทึกข้อมูล

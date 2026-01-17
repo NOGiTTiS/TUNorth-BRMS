@@ -169,13 +169,21 @@ export default function BookingDetailModal({
               </div>
               <div className="col-span-2">
                 <a
-                  href={`${API_URL}${booking.layout_image}`}
+                  href={
+                    booking.layout_image.startsWith("http")
+                      ? booking.layout_image
+                      : `${API_URL}${booking.layout_image}`
+                  }
                   target="_blank"
                   rel="noreferrer"
                   className="block"
                 >
                   <img
-                    src={`${API_URL}${booking.layout_image}`}
+                    src={
+                      booking.layout_image.startsWith("http")
+                        ? booking.layout_image
+                        : `${API_URL}${booking.layout_image}`
+                    }
                     alt="Layout"
                     className="w-full h-auto rounded-md border hover:opacity-90 transition-opacity"
                     style={{ maxHeight: "150px", objectFit: "cover" }}

@@ -11,7 +11,7 @@ type SettingRepository interface {
 
 type SettingService interface {
 	GetAllSettings() (map[string]interface{}, []domain.Setting, error)
-	UpdateSettings(updates []domain.Setting) error
+	UpdateSettings(updates []domain.Setting, actorID uint) error
 	GetSettingValue(key string) string
 	InitializeDefaults() error
 }

@@ -70,7 +70,7 @@ func main() {
 	// --- Bookings (เพิ่มส่วนนี้) ---
 	bookingRepo := storage.NewBookingRepository(database.DB)
 	bookingService := services.NewBookingService(bookingRepo, roomRepo, settingService, userRepo, notifService, logService)
-	bookingHandler := http.NewBookingHandler(bookingService)
+	bookingHandler := http.NewBookingHandler(bookingService, settingService)
 
 	// Auth Service
 	authService := services.NewAuthService(userRepo)

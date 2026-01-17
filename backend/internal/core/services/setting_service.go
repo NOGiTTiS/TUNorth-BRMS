@@ -29,12 +29,11 @@ func (s *settingService) GetAllSettings() (map[string]interface{}, []domain.Sett
 	return resultMap, settings, nil
 }
 
-func (s *settingService) UpdateSettings(updates []domain.Setting) error {
+func (s *settingService) UpdateSettings(updates []domain.Setting, actorID uint) error {
 	if err := s.repo.UpdateBatch(updates); err != nil {
 		return err
 	}
-	// Note: We don't have actorID here, using 0 for now.
-	go s.logService.LogAction(0, "UPDATE_SETTINGS", fmt.Sprintf("Updated %d settings", len(updates)), "", "")
+	go s.logService.LogAction(actorID, "UPDATE_SETTINGS", fmt.Sprintf("Updated %d settings", len(updates)), "", "")
 	return nil
 }
 
@@ -83,6 +82,11 @@ func (s *settingService) InitializeDefaults() error {
 		{SettingName: "popup_enabled", SettingValue: "false", Group: "popup", Type: "boolean", Label: "เปิดใช้งาน Popup", Description: "แสดง Popup เมื่อเข้าสู่ระบบ"},
 		{SettingName: "popup_image", SettingValue: "", Group: "popup", Type: "image", Label: "รูปภาพ Popup / QR", Description: "รูปภาพที่จะแสดงใน Popup"},
 		{SettingName: "popup_link", SettingValue: "", Group: "popup", Type: "text", Label: "ลิงก์ (เช่น Google Form)", Description: "ลิงก์เมื่อคลิกปุ่ม"},
+
+		// Cloudinary Storage
+		{SettingName: "cloudinary_cloud_name", SettingValue: "", Group: "storage", Type: "text", Label: "Cloud Name", Description: "Cloudinary Cloud Name"},
+		{SettingName: "cloudinary_api_key", SettingValue: "", Group: "storage", Type: "text", Label: "API Key", Description: "Cloudinary API Key"},
+		{SettingName: "cloudinary_api_secret", SettingValue: "", Group: "storage", Type: "password", Label: "API Secret", Description: "Cloudinary API Secret"},
 	}
 
 	for _, d := range defaults {

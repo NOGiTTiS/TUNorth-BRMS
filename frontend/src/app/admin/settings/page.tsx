@@ -17,6 +17,9 @@ import {
   Monitor,
   CalendarClock,
   MessageSquare,
+  Database,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import Image from "next/image";
 import {
@@ -46,6 +49,16 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
   const [settings, setSettings] = useState<SettingItem[]>([]);
+  const [visiblePasswords, setVisiblePasswords] = useState<
+    Record<string, boolean>
+  >({});
+
+  const togglePasswordVisibility = (name: string) => {
+    setVisiblePasswords((prev) => ({
+      ...prev,
+      [name]: !prev[name],
+    }));
+  };
 
   // Sync activeTab with URL
   useEffect(() => {
@@ -71,6 +84,10 @@ export default function AdminSettingsPage() {
       site_description: 2,
       copyright_text: 3,
       institute_name: 4,
+      // Storage (Cloudinary)
+      cloudinary_cloud_name: 1,
+      cloudinary_api_key: 2,
+      cloudinary_api_secret: 3,
     };
 
     return settings
@@ -308,10 +325,36 @@ export default function AdminSettingsPage() {
             </SelectContent>
           </Select>
         );
-      default: // text, number, password
+      case "password":
+        return (
+          <div className="relative">
+            <Input
+              type={
+                visiblePasswords[setting.setting_name] ? "text" : "password"
+              }
+              value={setting.setting_value}
+              onChange={(e) =>
+                handleValueChange(setting.setting_name, e.target.value)
+              }
+              className="w-full h-12 pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => togglePasswordVisibility(setting.setting_name)}
+              className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              {visiblePasswords[setting.setting_name] ? (
+                <EyeOff size={20} />
+              ) : (
+                <Eye size={20} />
+              )}
+            </button>
+          </div>
+        );
+      default: // text, number
         return (
           <Input
-            type={setting.type === "password" ? "text" : setting.type}
+            type={setting.type}
             value={setting.setting_value}
             onChange={(e) =>
               handleValueChange(setting.setting_name, e.target.value)
@@ -330,6 +373,7 @@ export default function AdminSettingsPage() {
     { id: "telegram", label: "Telegram", icon: MessageSquare }, // Added Icon
     { id: "notification", label: "แจ้งเตือน", icon: Bell },
     { id: "popup", label: "Popup", icon: Monitor }, // Reusing Icon
+    { id: "storage", label: "Storage", icon: Database },
   ];
 
   const handleTabChange = (tabId: string) => {

@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"path/filepath"
 	"time"
+	"tunorth-brms-backend/internal/adapters/storage"
 	"tunorth-brms-backend/internal/core/domain"
 	"tunorth-brms-backend/internal/core/ports"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type SettingHandler struct {
@@ -47,7 +49,18 @@ func (h *SettingHandler) UpdateSettings(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input"})
 	}
 
-	if err := h.service.UpdateSettings(updates); err != nil {
+	// Extract User ID from Token
+	userCtx := c.Locals("user")
+	var actorID uint
+	if userCtx != nil {
+		userToken := userCtx.(*jwt.Token)
+		claims := userToken.Claims.(jwt.MapClaims)
+		if idFloat, ok := claims["user_id"].(float64); ok {
+			actorID = uint(idFloat)
+		}
+	}
+
+	if err := h.service.UpdateSettings(updates, actorID); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -62,22 +75,45 @@ func (h *SettingHandler) UploadImage(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Image is required"})
 	}
 
-	// 2. ตรวจสอบนามสกุล
-	ext := filepath.Ext(file.Filename)
-	// Allow: jpg, png, jpeg, webp
-	// (Skipping detailed check for brevity, allow all for now)
+	// Retrieve Cloudinary Settings
+	cloudName := h.service.GetSettingValue("cloudinary_cloud_name")
+	apiKey := h.service.GetSettingValue("cloudinary_api_key")
+	apiSecret := h.service.GetSettingValue("cloudinary_api_secret")
 
-	// 3. ตั้งชื่อไฟล์ใหม่ (ป้องกันซ้ำ)
+	// 2. ถ้ามี Config ครบ ให้ใช้ Cloudinary
+	if cloudName != "" && apiKey != "" && apiSecret != "" {
+		// Init Adapter
+		adapter, err := storage.NewCloudinaryAdapter(cloudName, apiKey, apiSecret)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to init Cloudinary: " + err.Error()})
+		}
+
+		// Upload
+		url, err := adapter.Upload(file, "setting_"+fmt.Sprint(time.Now().UnixNano()))
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Cloudinary Upload Failed: " + err.Error()})
+		}
+
+		return c.JSON(fiber.Map{"url": url})
+	}
+
+	// -------------------------------------------------------------
+	// Fallback: Local Storage (เดิม)
+	// -------------------------------------------------------------
+	
+	// ตรวจสอบนามสกุล
+	ext := filepath.Ext(file.Filename)
+
+	// ตั้งชื่อไฟล์ใหม่
 	fileName := fmt.Sprintf("setting_%d%s", time.Now().UnixNano(), ext)
 	filePath := fmt.Sprintf("./uploads/%s", fileName)
 
-	// 4. บันทึกไฟล์
+	// บันทึกไฟล์
 	if err := c.SaveFile(file, filePath); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to save file"})
 	}
 
-	// 5. คืนค่า URL
-	// สมมติว่า server serve static files ที่ /uploads
+	// คืนค่า URL (Localhost)
 	fullURL := fmt.Sprintf("http://localhost:8080/uploads/%s", fileName)
 	return c.JSON(fiber.Map{"url": fullURL})
 }
