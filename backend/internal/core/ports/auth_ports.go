@@ -11,6 +11,7 @@ type UserRepository interface {
 	GetAll() ([]domain.User, error)
 	Update(user *domain.User) error
 	Delete(id uint) error
+	Count() (int64, error)
 }
 
 type AuthService interface {
@@ -28,4 +29,5 @@ type UserService interface {
 
 	// ✅ เพิ่มบรรทัดนี้ลงไปครับ
 	CreateUser(user *domain.User) error
+	InitializeDefaultAdmin() error
 }

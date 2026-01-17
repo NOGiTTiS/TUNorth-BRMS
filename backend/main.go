@@ -80,6 +80,7 @@ func main() {
 	// Auto-Migrate & Initialize Defaults
 	database.DB.AutoMigrate(&domain.Setting{}, &domain.Booking{}, &domain.Log{})
 	settingService.InitializeDefaults()
+	userService.InitializeDefaultAdmin()
 
 	// 4. Setup Fiber App
 	app := fiber.New(fiber.Config{

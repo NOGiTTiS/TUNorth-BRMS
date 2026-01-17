@@ -40,6 +40,7 @@ import {
   Download,
   FileSpreadsheet,
 } from "lucide-react";
+import { API_URL } from "@/config";
 
 export default function AdminUsersPage() {
   const router = useRouter();
@@ -58,6 +59,7 @@ export default function AdminUsersPage() {
   const [importFile, setImportFile] = useState<File | null>(null);
 
   // 1. Fetch Users
+  // 1. Fetch Users
   const fetchUsers = async () => {
     try {
       const res = await fetch(`${API_URL}/api/users`, {
@@ -65,9 +67,14 @@ export default function AdminUsersPage() {
       });
       if (res.ok) {
         setUsers(await res.json());
+      } else {
+        toast.error("ไม่สามารถดึงข้อมูลผู้ใช้งานได้");
       }
     } catch (e) {
       console.error(e);
+      toast.error("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+    } finally {
+      setLoading(false);
     }
   };
 

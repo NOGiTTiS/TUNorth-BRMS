@@ -168,30 +168,6 @@ export default function AdminDashboard() {
       {/* 2. Header Area: ภาพรวมระบบ + Buttons */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-slate-800">ภาพรวมระบบ</h1>
-
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={() => router.push("/booking/create")}
-            className="w-full md:w-auto bg-tu-pink hover:bg-tu-pink-hover text-white rounded-full shadow-lg shadow-tu-pink/20 px-6"
-          >
-            <Plus className="mr-2 h-4 w-4" /> จองห้องประชุม
-          </Button>
-
-          <div className="hidden md:flex items-center px-4 py-2 bg-white border border-slate-200 rounded-md text-sm text-slate-600 shadow-sm">
-            สวัสดี,{" "}
-            <span className="font-bold ml-1">
-              {user?.username || "ผู้ดูแล"}
-            </span>
-          </div>
-
-          <Button
-            onClick={logout}
-            variant="destructive"
-            className="rounded-md shadow-sm bg-tu-pink hover:bg-tu-pink-hover"
-          >
-            ออกจากระบบ
-          </Button>
-        </div>
       </div>
 
       {/* 3. Stats Cards */}

@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"os"
 	"tunorth-brms-backend/internal/core/domain"
 	"tunorth-brms-backend/internal/core/ports"
 
@@ -92,4 +93,41 @@ func (s *userService) DeleteUser(id uint) error {
 		go s.logService.LogAction(0, "DELETE_USER", fmt.Sprintf("Deleted user ID: %d", id), "", "")
 	}
 	return err
+}
+
+func (s *userService) InitializeDefaultAdmin() error {
+	// 1. Check current users
+	count, err := s.repo.Count()
+	if err != nil {
+		return err
+	}
+
+	if count > 0 {
+		return nil // Already has users, skip seeding
+	}
+
+	// 2. Create Default Admin
+	adminUser := &domain.User{
+		Username:   "admin",
+		Password:   "admin123", // Default password, will be hashed
+		FullName:   "System Administrator",
+		Department: "IT",
+		Role:       "admin",
+		Email:      "admin@example.com",
+		Tel:        "-",
+	}
+
+	// Override with ENV if available
+	if os.Getenv("ADMIN_USERNAME") != "" {
+		adminUser.Username = os.Getenv("ADMIN_USERNAME")
+	}
+	if os.Getenv("ADMIN_PASSWORD") != "" {
+		adminUser.Password = os.Getenv("ADMIN_PASSWORD")
+	}
+	if os.Getenv("ADMIN_EMAIL") != "" {
+		adminUser.Email = os.Getenv("ADMIN_EMAIL")
+	}
+
+	fmt.Printf("Seeding Default Admin User: %s\n", adminUser.Username)
+	return s.CreateUser(adminUser)
 }

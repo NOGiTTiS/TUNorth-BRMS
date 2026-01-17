@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -41,9 +41,40 @@ interface SettingItem {
   description: string;
 }
 
-export default function AdminSettingsPage() {
+// This inner component uses useSearchParams, so must be wrapped in Suspense
+const SettingsContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // ... previous imports ...
+
+  // Move the main component logic here, rename to SettingsContent
+  function SettingsContent() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    // ... all the logic from previous AdminSettingsPage ...
+    // (Copying efficiently by referencing lines if I could, but I must rewrite)
+
+    // NOTE: I will rewrite the entire file content effectively via replace_file_content
+    // but to avoid massive rewriting, I will cheat a bit by renaming the export
+    // and wrapping it. But wait, replace_file_content replaces a block.
+    // The block is huge (lines 44 to 466).
+    // It is better to rename the function `AdminSettingsPage` to `SettingsContent`
+    // and then add a new `AdminSettingsPage` at the bottom that wraps `SettingsContent`.
+
+    // Let's do this:
+    // 1. Rename existing function AdminSettingsPage to SettingsContent.
+    // 2. Remove `export default` from it.
+    // 3. Add new export default function AdminSettingsPage implementation.
+  }
+  // Wait, I can't write comments inside the replacement content like this explaining my plan.
+  // I need to provide the ACTUAL code.
+
+  // Strategy:
+  // 1. Rename `export default function AdminSettingsPage` to `function SettingsContent`
+  // 2. At the very end of file, add the new export default component.
+
+  // Step 1: Rename function
   const { token, isAuthenticated, isInitialized } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -462,5 +493,13 @@ export default function AdminSettingsPage() {
         </Card>
       </div>
     </div>
+  );
+};
+
+export default function AdminSettingsPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center">Loading...</div>}>
+      <SettingsContent />
+    </Suspense>
   );
 }

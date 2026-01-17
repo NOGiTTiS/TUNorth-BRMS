@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { Room } from "@/types/room";
@@ -22,7 +22,7 @@ import { Loader2, ArrowLeft, CalendarPlus } from "lucide-react";
 import { toast } from "sonner";
 import { API_URL } from "@/config";
 
-export default function CreateBookingPage() {
+function CreateBookingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dateParam = searchParams.get("date"); // Get date from URL
@@ -513,5 +513,13 @@ export default function CreateBookingPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function CreateBookingPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center">Loading...</div>}>
+      <CreateBookingContent />
+    </Suspense>
   );
 }

@@ -57,3 +57,9 @@ func (r *userRepository) Update(user *domain.User) error {
 func (r *userRepository) Delete(id uint) error {
 	return r.db.Delete(&domain.User{}, id).Error
 }
+
+func (r *userRepository) Count() (int64, error) {
+	var count int64
+	err := r.db.Model(&domain.User{}).Count(&count).Error
+	return count, err
+}
