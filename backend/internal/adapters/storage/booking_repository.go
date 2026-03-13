@@ -22,28 +22,29 @@ func (r *bookingRepository) Create(booking *domain.Booking) error {
 
 func (r *bookingRepository) GetAll() ([]domain.Booking, error) {
 	var bookings []domain.Booking
-	// Preload Room และ User เพื่อเอาไปโชว์
-	err := r.db.Preload("Room").Preload("User").Find(&bookings).Error
+	// Preload Room, User และ อุปกรณ์
+	err := r.db.Preload("User").Preload("Room").Preload("BookingResources.Resource").Find(&bookings).Error
 	return bookings, err
 }
 
 func (r *bookingRepository) GetByID(id uint) (*domain.Booking, error) {
 	var booking domain.Booking
-	err := r.db.Preload("Room").Preload("User").First(&booking, id).Error
+	// Preload Room, User และ อุปกรณ์
+	err := r.db.Preload("User").Preload("Room").Preload("BookingResources.Resource").First(&booking, id).Error
 	return &booking, err
 }
 
-// GetByDateRange: ดึงข้อมูลเฉพาะช่วงวันที่กำหนด (เช่น ดึงทีละเดือน)
+// GetByDateRange: ดึงข้อมูลเฉพาะช่วงวันที่กำหนด (แก้ไขให้โหลดอุปกรณ์มาด้วย)
 func (r *bookingRepository) GetByDateRange(start, end time.Time) ([]domain.Booking, error) {
 	var bookings []domain.Booking
-	err := r.db.Preload("Room").Preload("User").
+	// เพิ่ม Preload ทั้ง User, Room และ BookingResources.Resource
+	err := r.db.Preload("User").Preload("Room").Preload("BookingResources.Resource").
 		Where("start_time >= ? AND start_time <= ?", start, end).
 		Find(&bookings).Error
 	return bookings, err
 }
 
 // CountOverlapping: นับจำนวนการจองที่เวลาทับซ้อนกัน
-// Logic: (StartA < EndB) AND (EndA > StartB)
 func (r *bookingRepository) CountOverlapping(roomID uint, start, end time.Time) (int64, error) {
 	var count int64
 	err := r.db.Model(&domain.Booking{}).

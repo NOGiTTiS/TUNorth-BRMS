@@ -149,8 +149,25 @@ export default function BookingDetailModal({
           {/* เพิ่มส่วนแสดงอุปกรณ์ แยกออกมา */}
           <div className="grid grid-cols-3 gap-2 text-sm">
             <div className="font-bold text-slate-700">อุปกรณ์ที่ต้องการ:</div>
-            <div className="col-span-2 text-slate-900">
-              {booking.resource_text || "-"}
+            <div className="col-span-2 text-slate-900 flex flex-col">
+              {/* แสดงอุปกรณ์ที่เลือกจาก Checkbox */}
+              {booking.booking_resources && booking.booking_resources.length > 0 ? (
+                <span>
+                  {booking.booking_resources.map((br: any) => br.resource?.resource_name).filter(Boolean).join(', ')}
+                </span>
+              ) : null}
+              
+              {/* แสดงข้อความที่พิมพ์เพิ่มเติม (ถ้ามี) */}
+              {booking.resource_text && (
+                <span className={booking.booking_resources && booking.booking_resources.length > 0 ? "mt-1" : ""}>
+                  {booking.resource_text}
+                </span>
+              )}
+
+              {/* ถ้าไม่มีทั้งคู่ให้แสดง - */}
+              {(!booking.booking_resources || booking.booking_resources.length === 0) && !booking.resource_text && (
+                <span>-</span>
+              )}
             </div>
           </div>
 

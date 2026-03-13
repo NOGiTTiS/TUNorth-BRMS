@@ -13,6 +13,7 @@ export interface Booking {
   attendees?: number;
   note?: string;
   resource_text?: string; 
+  booking_resources?: any[];
   layout_image?: string;
   
   // Relations
