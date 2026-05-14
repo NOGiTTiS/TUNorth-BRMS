@@ -191,6 +191,13 @@ func (s *bookingService) UpdateBooking(id uint, updatedBooking *domain.Booking, 
     existing.StartTime = updatedBooking.StartTime
     existing.EndTime = updatedBooking.EndTime
     existing.Note = updatedBooking.Note
+    existing.Department = updatedBooking.Department
+    existing.Phone = updatedBooking.Phone
+    existing.Attendees = updatedBooking.Attendees
+    existing.ResourceText = updatedBooking.ResourceText
+    if updatedBooking.LayoutImage != "" {
+        existing.LayoutImage = updatedBooking.LayoutImage
+    }
     // Add other fields if necessary
     
     // Validate Time again?

@@ -212,51 +212,82 @@ func (h *BookingHandler) UpdateBooking(c *fiber.Ctx) error {
         return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
     }
 
-    var input struct {
-        Subject   string    `json:"subject"`
-        RoomID    uint      `json:"room_id"` // Note: JSON uses string for uint in some cases, but here assumes number
-        StartTime time.Time `json:"start_time"`
-        EndTime   time.Time `json:"end_time"`
-        Note      string    `json:"note"`
+    var booking domain.Booking
+
+    if string(c.Request().Header.ContentType()) == "application/json" {
+        var input struct {
+            Subject   string    `json:"subject"`
+            RoomID    uint      `json:"room_id"`
+            StartTime time.Time `json:"start_time"`
+            EndTime   time.Time `json:"end_time"`
+            Note      string    `json:"note"`
+            Department   string    `json:"department"`
+            Phone        string    `json:"phone"`
+            Attendees    int       `json:"attendees"`
+            ResourceText string    `json:"resource_text"`
+        }
+
+        if err := c.BodyParser(&input); err != nil {
+            return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input"})
+        }
+
+        booking.Subject = input.Subject
+        booking.RoomID = input.RoomID
+        booking.StartTime = input.StartTime
+        booking.EndTime = input.EndTime
+        booking.Note = input.Note
+        booking.Department = input.Department
+        booking.Phone = input.Phone
+        booking.Attendees = input.Attendees
+        booking.ResourceText = input.ResourceText
+    } else {
+        booking.Subject = c.FormValue("subject")
+        roomID, _ := strconv.Atoi(c.FormValue("room_id"))
+        booking.RoomID = uint(roomID)
+        booking.Note = c.FormValue("note")
+        booking.Department = c.FormValue("department")
+        booking.Phone = c.FormValue("phone")
+        attendees, _ := strconv.Atoi(c.FormValue("attendees"))
+        booking.Attendees = attendees
+        booking.ResourceText = c.FormValue("resource_text")
+
+        layout := "2006-01-02T15:04:05.000Z"
+        if startTime, err := time.Parse(layout, c.FormValue("start_time")); err == nil {
+            booking.StartTime = startTime
+        }
+        if endTime, err := time.Parse(layout, c.FormValue("end_time")); err == nil {
+            booking.EndTime = endTime
+        }
+
+        file, err := c.FormFile("layout_image")
+        if err == nil {
+            cloudName := h.settingService.GetSettingValue("cloudinary_cloud_name")
+            apiKey := h.settingService.GetSettingValue("cloudinary_api_key")
+            apiSecret := h.settingService.GetSettingValue("cloudinary_api_secret")
+
+            if cloudName != "" && apiKey != "" && apiSecret != "" {
+                adapter, err := storage.NewCloudinaryAdapter(cloudName, apiKey, apiSecret)
+                if err == nil {
+                    url, err := adapter.Upload(file, fmt.Sprintf("booking_%d", time.Now().UnixNano()))
+                    if err == nil {
+                        booking.LayoutImage = url
+                    }
+                }
+            } else {
+                filename := fmt.Sprintf("booking_%d_%s", time.Now().Unix(), file.Filename)
+                path := fmt.Sprintf("./uploads/%s", filename)
+                if err := c.SaveFile(file, path); err == nil {
+                    booking.LayoutImage = "/uploads/" + filename
+                }
+            }
+        }
     }
 
-    if err := c.BodyParser(&input); err != nil {
-        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input"})
-    }
-
-    if input.Subject == "" {
+    if booking.Subject == "" {
         return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Subject cannot be empty"})
     }
     
-    // Manual mapping or use domain.Booking directly if body matches
-    // Note: The frontend sends JSON with room_id as string? Check BookingEditModal
-    // BookingEditModal sends: room_id (string), start_time (ISO string)
-    // Go Fiber BodyParser handles ISO string to time.Time automatically? Yes usually.
-    // But room_id string to uint might fail if strict.
-    // Let's use flexible struct or check frontend.
-    // Frontend sends room_id as string. Backend expects uint or int.
-    // Fiber parser is smart enough usually, but let's be safe.
-    // Actually, `c.BodyParser` decodes based on the struct tag.
-    // If I use `RoomID string` I can convert manually.
-
-    // Let's try direct mapping to domain.Booking struct first, usually easier.
-    // But domain.Booking has many fields.
-    
-    fmt.Printf("Updating Booking ID: %d with data: %+v\n", id, input) // Debug Log
-
-    // Use domain booking for simplicity
-    booking := domain.Booking{
-		Subject:   input.Subject,
-        // RoomID will need handling if frontend sends string
-        // StartTime, EndTime handled
-        Note: input.Note,
-	}
-    // Handle RoomID manually if needed, but if input.RoomID is uint, frontend MUST send number or string-number.
-    booking.RoomID = input.RoomID
-    booking.StartTime = input.StartTime
-    booking.EndTime = input.EndTime
-    
-    // Get User ID from Token (Assuming Middleware puts it in Locals "user_id" or similar)
+    // Get User ID from Token
 	userCtx := c.Locals("user")
     actorID := uint(0)
 	if userCtx != nil {
